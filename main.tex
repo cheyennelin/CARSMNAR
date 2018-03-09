@@ -1,0 +1,296 @@
+\documentclass{llncs}
+%\documentclass{acm_proc_article-sp}
+\usepackage[lined,boxed,commentsnumbered, ruled]{algorithm2e}
+\usepackage{amssymb,amsmath}
+\usepackage{epsfig,graphicx,subfigure}
+\usepackage{multirow}
+
+
+\begin{document}
+\title{Context Aware Recommendation on Missing not at Random Contextual Texts}
+%% use optional labels to link authors explicitly to addresses:
+\author{Dugang Liu\inst{1} \and Chen Lin\inst{1}}
+\institute{Department of Computer Science, Xiamen University \email{chenlin@xmu.edu.cn}}
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+% Context Aware Recommendation: importance, 
+Context Aware Recommendation System (CARS) has recently attracted  interest from both academy and industry. CARS is welcomed by enterprises and users because it delivers more accurate and reasonable recommendation by taking contextual information into account. The contextual information includes and is not limited to when, where and with whom the user is to purchase an item. CARS has been successfully applied in a bunch of areas, including travel~\cite{Biancalana2013Approach}, music~\cite{Cai2007MusicSense}, web news~\cite{Wang2015CROWN} and so on. 
+
+
+%contextual information gather from text, related work survey
+The input of CARS is user feedback (i.e. user-item ratings) and the corresponding contextual information. Contextual information can be gathered from various sources. The era of Web 2.0 has kindled massive growth of opinions and reviews on the web. Therefore more and more researchers explore the feasibility of building CARS based on online reviews~\cite{Li2010Contextual,Levi2012Finding,Hariri2013Query,Liu2013Combining,Marcelo2016Mining}. They adopted text mining techniques to extract contextual information from online reviews and transform a rating into a contextual rating. Then conventional recommendation models are built on contextual ratings.
+
+%disadvantage: sparsity. (1) no context 
+Generally CARS suffers from the data sparsity problem. We have to deal with two challenges related to sparse contextual user feedback. First of all, \textbf{the missing of contextual information in ratings and reviews}. Even with powerful text mining techniques, the amount of user feedback with contextual information is far from sufficient to train a promising recommendation model. Users do not always provide contextual information when they give ratings and reviews. Below we show several examples of online reviews with and without implications on the contexts.
+
+%example here
+\begin{figure}[!ht]
+\label{fig:example}
+\centering
+\includegraphics[width=0.8\textwidth]{example.eps}
+\caption{Selected reviews for two restaurants from www.yelp.ca. Reviews are shortened for the limited space. Number of starts for each indicate user rating. Reviews in violet rectangles are context explicit feedback, reviews in yellow rectangles are context implicit feedback}
+\end{figure}
+
+% problem: missing? not at random
+Existing research efforts simply discard reviews without any contextual information. They fail to make full use of user feedback, because the rating could still be informative even that the context is not given. We  show here that this strategy is problematic when the contextual information in reviews are missing not at random.  For example, many social studies have found that users write online reviews to ``brag or moan''~\cite{}, therefore online users give the contextual information on purpose in respond to an extreme experience under the given contexts. Consider the illustrative example in Fig~\ref{fig:example}. On the left  the user is satisfied with ... under context ... On the right, the user is ...
+
+To address the above problem, we propose a novel model which is based on missing not at random assumptions. To connect the dots among ratings, non-contextual reviews and contextual reviews, we borrow the ideas of marginal utility theory~\cite{samuelson1937note}. Utility surplus is an economic concept to measure consumer's ``satisfaction'' or ``pleasure''. We expand the definition of utility surplus to a context aware setting: when a consumer obtains more satisfaction from  a purchase under a certain context (contextual utility) than a general purchase under any context (general utility), he/she is more likely to post a piece of positive review regarding the context. Otherwise, if a consumer obtains less contextual utility than general utility, he/she is likely to post a piece of negative review regarding the context. If the consumer considers the satisfactions are equivalent under any context, he/she is more likely to give a non contextual review. 
+
+%(2) high dimensional 
+The second issue is \textbf{the high dimensionality of context space}. Most prior works modeled the ratings as a hypercube. With the massive number of possible values for each contextual dimension, the data sparsity problem is more severe. Take the location context for example, the purchase could happen at any place, thus it is very difficult to collect enough  ratings which occur in the same place. 
+
+
+% model contextual scenario
+A strategy that departs from data cube approach is to project contextual ratings into hidden lower dimensional contextual spaces which consist of a set of contextual scenarios. We follow this path because it can be naturally incorporated into our models. The utility is the aggregation of user preferences over several commodity features of interest.  We assume that the contextual utility is associated to a contextual scenario and the contextual information in the review texts are distributed depending on the contextual scenario.  
+
+
+% contribution: first MNAR in context aware recommendation and text mining 
+
+Our contributions are three folds. (1) To the best of our knowledge, our work is the first in literature to apply MNAR properties to CARS and text mining based recommendations.  We incorporate the utility theory in this novel model. (2) We address the data sparsity problem by exploiting non contextual reviews and embedding in a dimension reduction models. (3) We deliver recommendations that are both accurate and more explainable. 
+
+% paper structure 
+
+The rest of this paper is organized as follows. We provide a brief discussion on related work in section~\ref{sec:related}. We introduce the model on missing not at random contextual texts in section~\ref{sec:mnar}. We then detail the application of this model in context aware recommendation in section~\ref{sec:method}. The experimental results are described and analyzed in section~\ref{sec:exp}. Finally, we conclude our work in section~\ref{sec:con}.
+
+\section{Related Work}\label{sec:related}
+This work is related to two areas: contextual aware recommendation systems and online review mining.
+\subsection{Context Aware Recommendation Systems}
+%recsys
+%Most recommender systems use numeric user ratings to construct a rating matrix, and apply collaborative filtering approaches to recommend items for users with similar tastes~\cite{Bobadilla2013Recommender}. There are two types of collaborative filtering techniques. One is based on retrieving nearest neighbors, performances of which are enhanced by modifying the similarity measurements, such as removing the global effect of nearest neighbors~\cite{Bell2007Scalable}. The other is based on matrix factorization~\cite{Koren2009Matrix} to approximate the observed ratings with hidden user preferences and item features. Probabilistic versions of matrix factorization are also prodominant~\cite{salakhutdinov2008probabilistic}. For binary relevance data, researchers present methodologies that target different object functions, most of which are ranking related measures. For example, BPR~\cite{Rendle2009BPR} maximizes the likelihood of pair-wise rankings, CliMF~\cite{Shi2012CLiMF} directly maximizes the mean reciprocal rank to improve top-k recommendations, ListRank-MF~\cite{Shi2010Listwise} minimizes a loss function that represents the uncertainty between training lists and output lists.
+%CARS
+CARS is an emerging topic in recommender community~\cite{Adomavicius2011Context}. The performance of CARS has been verified by a live controlled experiment~\cite{Gorgoglione2011Effect}. There are three types of approaches to incorporate contextual information in the recommendation process. The first type is to pre-filter, i.e. select contextualized ratings data and factorize each context specific rating matrix~\cite{Adomavicius2005Incorporating}. The second type is to post-filter, i.e. split the resulting items to different contexts after recommendation~\cite{Baltrunas2009Context}. The third type is to model the context, i.e. as a latent variable in BNN~\cite{Palmisano2008Using}, or as a latent factor in matrix factorization~\cite{Baltrunas2011Context}. or as tensor factorization~\cite{Wang2015CROWN,Karatzoglou2010Multiverse}. Empirical study has shown that which approach is better depends on the application~\cite{Panniello2009Experimental}. The sparsity of rating data is an obstacle for CARS. A typical improvement is to integrate other resources, i.e. demographic information~\cite{Li2011Towards}, sequential patterns~\cite{Hariri2012Context}, or, as we might review in the next subsection, texts in online reviews~\cite{Li2010Contextual,Levi2012Finding,Hariri2013Query,Liu2013Combining}.
+
+\subsection{Online Review Mining}
+Online review mining has been an active research area. Most existing researches are efforts that summarize reviews and extract certain information, i.e. opinion polarities~\cite{Liu2005Opinion}, user groups according to their interests~\cite{Si2014Users}, aspects of products~\cite{Moghaddam2013FLDA}, and so on. Online review mining often requires a skillful combination of natural language processing (NLP) and machine learning models. An omnipotent model does not exist for every domain.
+Information extracted from online reviews is helpful in recommender systems. For example, identifying product aspects and user opinions is crucial for predicting a user's rating~\cite{Qu2010Bag}, estimating the review quality can "up-weight" or "down-weight" the importance of individual rating while performing collaborative filtering~\cite{Raghavan2012Review}. For CARS, online review mining also assists the recommendation process in POI recommender~\cite{Biancalana2013Approach}, hotel recommender~\cite{Levi2012Finding}, and restaurant recommender\cite{Li2010Contextual}, etc..
+For RGCARS, most researches in literature directly utilize the extracted conextual opinions to form preference data, and then pipe the explicit feedback with a CARS model. For example, a tensor factorization model is presented in ~\cite{Levi2012Finding}, which imitates a user who favors reviews written by people with the same intent, nationality and tasts. An extended LDA is presented in ~\cite{Hariri2013Query}, which jointly models users, items and contexts. In ~\cite{Li2010Contextual}, the contextural information is integrated into a probabilistic latent relational model, which factorizes ratings to item specific features, as well as a combination of the current context and a user's long term preference. In ~\cite{Liu2013Combining} a simple recommendation model is used to aggregate opinions over each product feature.
+
+
+\section{ Model}\label{sec:mnar}
+\subsection{Utility Surplus}
+In Economics, utility is an important property of any commodity. It measures the satisfaction consumers get by purchasing an item. Money, as a special case of commodity, can also be measured by a utility function. If the consumer is willing to pay a certain amount of money, which is the price $v_p$, to purchase an item $v$, then the utility surplus $US(u,v)=UC(u,v)-UM(u_p,v_p)$, which is the commodity utility $UC$ minus the money utility $UM$, will be positive.
+Usually, the commodity utility can not be directly counted, but can be inferred from observed consumptions. Moreover, a common assumption is that the commodity utility can be modeled as a linear combination of user preferences over commodity features. We extend this theory to the CARS problem. Suppose the user preference is represented by $u$, and contextual preference is represented by $a$, then the commodity utility under context $k$ is measured by a combination of user specifict utility and context aware utility: $UC_k(u,v)= \sum_c (\alpha a_{k,c} + (1-\alpha) u_c) v_c$, where $a_{k,c}$ is the contextual preference under context $k$ to the commodity feature $c$, $u_c$ is the user preference to $c$, and $v_c$ is the quality of item $v$ on feature $c$.
+The utility function of money could be more complicated. However, in this scenario, the consumers are paying a very small portion of money, compared to their incomes. So according to the law of diminishing marginal utility, a linear function can be adopted to measure the decrease of consumer satisfaction by losing the money, i.e. $UM(u_p,v_P)=u_P v_P$. Here $u_P$ can also be interpreted as users' sensitiveness to price.
+We make the following manipulation to ensure that the score coincides with a probability.
+\begin{equation}\label{equ:pcx}
+p(x_{u,v,k}=1|\mathbf{u,a,v})=g(UC_k(\mathbf{u,v}))=\frac{1}{1+\exp{-UC_k(\mathbf{u,v})}}
+\end{equation}
+The economic interpretation is clear. If the user is satisfied with the consumption for the context, $US_k(u,v)>0$ , then $p(c|x)>0.5$, which suggests that it is possible to choose the write a positive review.
+\section{Application}\label{sec:method}
+%problem definition
+\subsection{ Recommendation}
+\subsection{Contextual Information Extraction}
+
+
+\section{Experiment}\label{sec:exp}
+\section{Conclusion}~\label{sec:con}
+In this paper, we mainly focus on exploring the potencial of implicit feedback in a review guided context aware recommender system. We present new models, based on the utility surplus theory, to tackle the implicit feedback problem by treating them as complete observations or missing not at random observations. We systematically compare the assumptions and performances of thes models.
+The most important academic contribution of this paper is that, to the best of our
+knowledge, the unique types of implicit feedback (both context free and context aware) have not yet been studied by the community. Therefore our research might shed some insight into mining online reviews for recommender system, and other applications.
+Further research issues include adapting and testfying more assumption in the missing not at random model.
+For example, the inter homogenity of online communities, and applying the CPP model to appropriate contexts.
+%\section{Acknowledgement}
+%Chen Lin is partially supported by China Natural Science Foundation under Grant Nos. NSFC61102136, NSFC61472335, CCF-Tencent Open Research Fund under Grant No. CCF-Tencent20130101, Base Research Project of Shenzhen Bureau of Science,Technology, and Information under Grand No. JCYJ20120618155655087, Baidu Open Research under Grant No.Z153283.
+\begin{thebibliography}{10}
+\bibitem{Adomavicius2005Incorporating}
+Gediminas Adomavicius, Ramesh Sankaranarayanan, Shahana Sen, and Alexander
+Tuzhilin.
+\newblock Incorporating contextual information in recommender systems using a
+multidimensional approach.
+\newblock {\em ACM Trans. Inf. Syst.}, 23(1):103--145, January 2005.
+\bibitem{Adomavicius2011Context}
+Gediminas Adomavicius and Alexander Tuzhilin.
+\newblock Context-aware recommender systems.
+\newblock In {\em Recommender systems handbook}, pages 217--253. Springer,
+2011.
+\bibitem{Baltrunas2011Context}
+Linas Baltrunas, Bernd Ludwig, Stefan Peer, and Francesco Ricci.
+\newblock Context-aware places of interest recommendations for mobile users.
+\newblock In {\em Design, User Experience, and Usability. Theory, Methods,
+Tools and Practice}, pages 531--540. Springer, 2011.
+\bibitem{Baltrunas2009Context}
+Linas Baltrunas and Francesco Ricci.
+\newblock Context-based splitting of item ratings in collaborative filtering.
+\newblock In {\em Proceedings of the Third ACM Conference on Recommender
+Systems}, RecSys '09, pages 245--248, New York, NY, USA, 2009. ACM.
+\bibitem{Bell2007Scalable}
+R.M. Bell and Y.~Koren.
+\newblock Scalable collaborative filtering with jointly derived neighborhood
+interpolation weights.
+\newblock In {\em Data Mining, 2007. ICDM 2007. Seventh IEEE International
+Conference on}, pages 43--52. Ieee, 2007.
+\bibitem{Biancalana2013Approach}
+Claudio Biancalana, Fabio Gasparetti, Alessandro Micarelli, and Giuseppe
+Sansonetti.
+\newblock An approach to social recommendation for context-aware mobile
+services.
+\newblock {\em ACM Trans. Intell. Syst. Technol.}, 4(1):10:1--10:31, February
+2013.
+\bibitem{Bobadilla2013Recommender}
+J.~Bobadilla, F.~Ortega, A.~Hernando, and A.~Guti??rrez.
+\newblock Recommender systems survey.
+\newblock {\em Knowledge-Based Systems}, 46(0):109 -- 132, 2013.
+\bibitem{Cai2007MusicSense}
+Rui Cai, Chao Zhang, Chong Wang, Lei Zhang, and Wei-Ying Ma.
+\newblock Musicsense: Contextual music recommendation using emotional
+allocation modeling.
+\newblock In {\em Proceedings of the 15th International Conference on
+Multimedia}, MULTIMEDIA '07, pages 553--556, New York, NY, USA, 2007. ACM.
+\bibitem{Gorgoglione2011Effect}
+Michele Gorgoglione, Umberto Panniello, and Alexander Tuzhilin.
+\newblock The effect of context-aware recommendations on customer purchasing
+behavior and trust.
+\newblock In {\em Proceedings of the Fifth ACM Conference on Recommender
+Systems}, RecSys '11, pages 85--92, New York, NY, USA, 2011. ACM.
+\bibitem{Hariri2012Context}
+Negar Hariri, Bamshad Mobasher, and Robin Burke.
+\newblock Context-aware music recommendation based on latenttopic sequential
+patterns.
+\newblock In {\em Proceedings of the Sixth ACM Conference on Recommender
+Systems}, RecSys '12, pages 131--138, New York, NY, USA, 2012. ACM.
+\bibitem{Hariri2013Query}
+Negar Hariri, Bamshad Mobasher, and Robin Burke.
+\newblock Query-driven context aware recommendation.
+\newblock In {\em Proceedings of the 7th ACM Conference on Recommender
+Systems}, RecSys '13, pages 9--16, New York, NY, USA, 2013. ACM.
+\bibitem{Heckerman1997Models}
+David Heckerman and Christopher Meek.
+\newblock Models and selection criteria for regression and classification.
+\newblock In {\em Proceedings of the Thirteenth Conference on Uncertainty in
+Artificial Intelligence}, UAI'97, pages 223--228, San Francisco, CA, USA,
+1997. Morgan Kaufmann Publishers Inc.
+\bibitem{Karatzoglou2010Multiverse}
+Alexandros Karatzoglou, Xavier Amatriain, Linas Baltrunas, and Nuria Oliver.
+\newblock Multiverse recommendation: N-dimensional tensor factorization for
+context-aware collaborative filtering.
+\newblock In {\em Proceedings of the Fourth ACM Conference on Recommender
+Systems}, RecSys '10, pages 79--86, New York, NY, USA, 2010. ACM.
+\bibitem{Koren2009Matrix}
+Y.~Koren, R.~Bell, and C.~Volinsky.
+\newblock Matrix factorization techniques for recommender systems.
+\newblock {\em Computer}, 42(8):30--37, 2009.
+\bibitem{Levi2012Finding}
+Asher Levi, Osnat Mokryn, Christophe Diot, and Nina Taft.
+\newblock Finding a needle in a haystack of reviews: Cold start context-based
+hotel recommender system.
+\newblock In {\em Proceedings of the Sixth ACM Conference on Recommender
+Systems}, RecSys '12, pages 115--122, New York, NY, USA, 2012. ACM.
+\bibitem{Li2011Towards}
+Beibei Li, Anindya Ghose, and Panagiotis~G. Ipeirotis.
+\newblock Towards a theory model for product search.
+\newblock In {\em Proceedings of the 20th international conference on world
+wide web}, pages 327--336, 2011.
+\bibitem{Li2010Contextual}
+Yize Li, Jiazhong Nie, Yi~Zhang, Bingqing Wang, Baoshi Yan, and Fuliang Weng.
+\newblock Contextual recommendation based on text mining.
+\newblock In {\em Proceedings of the 23rd International Conference on
+Computational Linguistics: Posters}, COLING '10, pages 692--700, Stroudsburg,
+PA, USA, 2010. Association for Computational Linguistics.
+\bibitem{Liu2005Opinion}
+Bing Liu, Minqing Hu, and Junsheng Cheng.
+\newblock Opinion observer: Analyzing and comparing opinions on the web.
+\newblock In {\em Proceedings of the 14th International Conference on World
+Wide Web}, WWW '05, pages 342--351, New York, NY, USA, 2005. ACM.
+\bibitem{Liu2013Combining}
+Hongyan Liu, Jun He, Tingting Wang, Wenting Song, and Xiaoyang Du.
+\newblock Combining user preferences and user opinions for accurate
+recommendation.
+\newblock {\em Electronic Commerce Research and Applications}, 12(1):14 -- 23,
+2013.
+\bibitem{Moghaddam2013FLDA}
+Samaneh Moghaddam and Martin Ester.
+\newblock {The FLDA model for aspect-based opinion mining: addressing the cold
+start problem}.
+\newblock In {\em Proceedings of the 22nd international conference on World
+Wide Web}, pages 909--918. International World Wide Web Conferences Steering
+Committee, May 2013.
+\bibitem{Ounis2006Terrier}
+I.~Ounis, G.~Amati, V.~Plachouras, B.~He, C.~Macdonald, and C.~Lioma.
+\newblock {Terrier: A High Performance and Scalable Information Retrieval
+Platform}.
+\newblock In {\em Proceedings of ACM SIGIR'06 Workshop on Open Source
+Information Retrieval (OSIR 2006)}, 2006.
+\bibitem{Palmisano2008Using}
+C.~Palmisano, A~Tuzhilin, and M.~Gorgoglione.
+\newblock Using context to improve predictive modeling of customers in
+personalization applications.
+\newblock {\em Knowledge and Data Engineering, IEEE Transactions on},
+20(11):1535--1549, Nov 2008.
+\bibitem{Panniello2009Experimental}
+Umberto Panniello, Alexander Tuzhilin, Michele Gorgoglione, Cosimo Palmisano,
+and Anto Pedone.
+\newblock Experimental comparison of pre- vs. post-filtering approaches in
+context-aware recommender systems.
+\newblock In {\em Proceedings of the Third ACM Conference on Recommender
+Systems}, RecSys '09, pages 265--268, New York, NY, USA, 2009. ACM.
+\bibitem{Qu2010Bag}
+Lizhen Qu, Georgiana Ifrim, and Gerhard Weikum.
+\newblock The bag-of-opinions method for review rating prediction from sparse
+text patterns.
+\newblock In {\em Proceedings of the 23rd International Conference on
+Computational Linguistics}, COLING '10, pages 913--921, Stroudsburg, PA, USA,
+2010. Association for Computational Linguistics.
+\bibitem{Raghavan2012Review}
+Sindhu Raghavan, Suriya Gunasekar, and Joydeep Ghosh.
+\newblock Review quality aware collaborative filtering.
+\newblock In {\em Proceedings of the Sixth ACM Conference on Recommender
+Systems}, RecSys '12, pages 123--130, New York, NY, USA, 2012. ACM.
+\bibitem{Rendle2009BPR}
+Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme.
+\newblock Bpr: Bayesian personalized ranking from implicit feedback.
+\newblock In {\em Proceedings of the Twenty-Fifth Conference on Uncertainty in
+Artificial Intelligence}, UAI '09, pages 452--461, Arlington, Virginia,
+United States, 2009. AUAI Press.
+\bibitem{salakhutdinov2008probabilistic}
+R.~Salakhutdinov and A.~Mnih.
+\newblock Probabilistic matrix factorization.
+\newblock {\em Advances in neural information processing systems},
+20:1257--1264, 2008.
+\bibitem{Shi2012CLiMF}
+Yue Shi, Alexandros Karatzoglou, Linas Baltrunas, Martha Larson, Nuria Oliver,
+and Alan Hanjalic.
+\newblock Climf: Learning to maximize reciprocal rank with collaborative
+less-is-more filtering.
+\newblock In {\em Proceedings of the Sixth ACM Conference on Recommender
+Systems}, RecSys '12, pages 139--146, New York, NY, USA, 2012. ACM.
+\bibitem{Shi2010Listwise}
+Yue Shi, Martha Larson, and Alan Hanjalic.
+\newblock List-wise learning to rank with matrix factorization for
+collaborative filtering.
+\newblock In {\em Proceedings of the fourth ACM conference on Recommender
+systems}, RecSys '10, pages 269--272, New York, NY, USA, 2010. ACM.
+\bibitem{Si2014Users}
+Jianfeng Si, Qing Li, Tieyun Qian, and Xiaotie Deng.
+\newblock Users?? interest grouping from online reviews based on topic
+frequency and order.
+\newblock In {\em World Wide Web}, 17(6):1321?C1342, 2014.
+\bibitem{Wang2015CROWN}
+S.~Wang, B.~Zou, C.~Li, K.~Zhao, Q.~Liu, and H.~Chen.
+\newblock Crown: A context-aware recommender for web news.
+\newblock In {\em 2015 IEEE 31st International Conference on Data Engineering},
+pages 1420--1423, April 2015.
+\bibitem{Marlin2009Collaborative}
+Marlin, Benjamin M. and Zemel, Richard S.
+\newblock Collaborative Prediction and Ranking with Non-random Missing Data
+\newblock In {\em Proceedings of the Third ACM Conference on Recommender Systems}, RecSys '09, pages 5--12, New York, NY, USA, 2009, ACM.
+\bibitem{Wojnicki2008Word}
+\newblock A.C. Wojnicki, D. Godes.
+\newblock Word-of-Mouth as Self-Enhancement
+\newblock In {\em HBS Marketing Research Paper No.
+06-01}, 2008.
+\bibitem{samuelson1937note}
+\newblock Paul A Samuelson
+\newblock A note on measurement of utility
+\newblock In {\em The Review of Economic Studies}, pages 155--161, 4(2), 1937
+\bibitem{Marcelo2016Mining}
+\newblock Marcelo G. Manzato , Marcos A. Domingues , Arthur C. Fortes , Camila V. Sundermann , Rafael M. D'addio , Merley S. Conrado , Solange O. Rezende , Maria G. Pimentel.
+\newblock Mining unstructured content for recommender systems: an ensemble approach,
+\newblock In {\em Information Retrieval} 19(4), p.378-415, August 2016
+
+\end{thebibliography}
+\end{document}
