@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  10 MAR 2018 15:03
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  10 MAR 2018 21:04
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -323,7 +323,11 @@ Package: multirow 2016/11/25 v2.2 Span multiple rows of a table
 \multirow@dima=\skip73
 \bigstrutjot=\dimen146
 )
-(./main.aux)
+(./main.aux
+
+LaTeX Warning: Label `equ:mstepa' multiply defined.
+
+)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 9.
@@ -338,8 +342,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 9.
 LaTeX Font Info:    ... okay on input line 9.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 9.
 LaTeX Font Info:    ... okay on input line 9.
-
-(/usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+ (/usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count138
 \scratchdimen=\dimen147
@@ -432,36 +435,82 @@ Package pdftex.def Info: example-eps-converted-to.pdf used on input line 35.
 
 {/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2 <./e
 xample-eps-converted-to.pdf>] [3] [4]
-
-LaTeX Warning: Reference `' on page 5 undefined on input line 115.
-
 [5]
-Overfull \hbox (8.76988pt too wide) in paragraph at lines 117--118
+Overfull \hbox (8.76988pt too wide) in paragraph at lines 118--119
 []\OT1/cmr/m/n/10 A con-text sce-nario $\OML/cmm/m/it/10 c$ \OT1/cmr/m/n/10 is 
 cho-sen. This is mod-eled by gen-er-at-ing a $\OML/cmm/m/it/10 C \OMS/cmsy/m/n/
 10 ^^@ \OML/cmm/m/it/10 dimensional$
  []
 
 Package epstopdf Info: Source file: <model.eps>
-(epstopdf)                    date: 2018-03-10 14:44:25
-(epstopdf)                    size: 215609 bytes
+(epstopdf)                    date: 2018-03-10 17:25:34
+(epstopdf)                    size: 212265 bytes
 (epstopdf)             Output file: <model-eps-converted-to.pdf>
-(epstopdf)                    date: 2018-03-10 14:45:29
-(epstopdf)                    size: 13009 bytes
+(epstopdf)                    date: 2018-03-10 17:30:26
+(epstopdf)                    size: 12354 bytes
 (epstopdf)             Command: <epstopdf --outfile=model-eps-converted-to.pdf 
 model.eps>
 (epstopdf)             \includegraphics on input line 130.
 Package epstopdf Info: Output file is already uptodate.
-<model-eps-converted-to.pdf, id=46, 199.74625pt x 308.15125pt>
+<model-eps-converted-to.pdf, id=45, 199.74625pt x 308.15125pt>
 File: model-eps-converted-to.pdf Graphic file (type pdf)
 
 <use model-eps-converted-to.pdf>
 Package pdftex.def Info: model-eps-converted-to.pdf used on input line 130.
 (pdftex.def)             Requested size: 199.74576pt x 308.15048pt.
- [6] [7 <./model-eps-converted-to.pdf>]
-[8] [9] [10] (./main.aux)
 
-LaTeX Warning: There were undefined references.
+Overfull \hbox (8.35646pt too wide) detected at line 173
+[] \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 r \OT1/cmr/m/n/10 = 1\OM
+S/cmsy/m/n/10 j\OML/cmm/m/it/10 ^^B\OT1/cmr/m/n/10 ) = [] [] \OML/cmm/m/it/10 p
+\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 w\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 ^^L[]\OT1
+/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 s \OT1/cmr/m/n
+/10 = \OML/cmm/m/it/10 c\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 \OT1/cmr/m/n/10 ) +
+ []([] \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OMS/cmsy/m/n/10 j\
+OML/cmm/m/it/10 a[]; v\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/
+cmm/m/it/10 s \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 c\OMS/cmsy/m/n/10 j\OML/cmm/m/
+it/10 \OT1/cmr/m/n/10 )) + [] \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it
+/10 x\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 v; u\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 :
+
+ []
+
+
+Overfull \hbox (80.95282pt too wide) detected at line 179
+\OML/cmm/m/it/10 f\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 s; c\OT1/cmr/m/n/10 ) \OMS/
+cmsy/m/n/10 / \OT1/cmr/m/n/10 [[]][][[]][][[]][][[]][]\OML/cmm/m/it/10 :
+ []
+
+[6] [7 <./model-eps-converted-to.pdf>]
+Overfull \hbox (79.03625pt too wide) detected at line 185
+\OML/cmm/m/it/10 f\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 s; c\OT1/cmr/m/n/10 ) \OMS/
+cmsy/m/n/10 / \OT1/cmr/m/n/10 [[]][][[]][][[]][][[]][]\OML/cmm/m/it/10 :
+ []
+
+
+Overfull \hbox (46.0017pt too wide) detected at line 197
+\OML/cmm/m/it/10 u[] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 u[] \OMS/cmsy/m/n/10 ^^
+@ \OML/cmm/m/it/10 p\OMS/cmsy/m/n/10 f[] [] \OML/cmm/m/it/10 f\OT1/cmr/m/n/10 (
+\OML/cmm/m/it/10 s; c\OT1/cmr/m/n/10 )[[]]\OMS/cmsy/m/n/10 g\OML/cmm/m/it/10 ;
+ []
+
+
+Overfull \hbox (44.54576pt too wide) detected at line 204
+\OML/cmm/m/it/10 a[] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 a[] \OMS/cmsy/m/n/10 ^^
+@ \OML/cmm/m/it/10 p\OMS/cmsy/m/n/10 f[] \OML/cmm/m/it/10 f\OT1/cmr/m/n/10 (\OM
+L/cmm/m/it/10 s; c\OT1/cmr/m/n/10 )[[]]\OMS/cmsy/m/n/10 g\OML/cmm/m/it/10 :
+ []
+
+
+Overfull \hbox (60.14558pt too wide) in alignment at lines 208--211
+ [][][] []
+ []
+
+
+Underfull \vbox (badness 3138) has occurred while \output is active []
+
+ [8]
+[9] [10] [11] [12] (./main.aux)
+
+LaTeX Warning: There were multiply-defined labels.
 
  )
 (\end occurred inside a group at level 1)
@@ -469,39 +518,40 @@ LaTeX Warning: There were undefined references.
 ### simple group (level 1) entered at line 1061 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 4084 strings out of 492995
- 56823 string characters out of 6132704
- 141302 words of memory out of 5000000
- 7563 multiletter control sequences out of 15000+600000
+ 4091 strings out of 492995
+ 56934 string characters out of 6132704
+ 144406 words of memory out of 5000000
+ 7570 multiletter control sequences out of 15000+600000
  12056 words of font info for 46 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 39i,11n,26p,1347b,3357s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 39i,11n,26p,1347b,3356s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts
 /cm/cmbx10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmbx12.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/c
 m/cmbx9.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmex10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mmi10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-mi5.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi
-6.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.
-pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pf
-b></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb>
-</usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></
-usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr
-/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/lo
-cal/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local
-/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/te
-xlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/tex
-live/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texli
-ve/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive
-/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2
-017/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/20
-17/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/2017
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on main.pdf (10 pages, 321358 bytes).
+cmex10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cmex
+tra/cmex9.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmmi10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmmi5.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mmi6.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmm
+i7.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8
+.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.p
+fb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb
+></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></
+usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr
+/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/lo
+cal/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local
+/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/
+texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/te
+xlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texl
+ive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texliv
+e/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive
+/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/2
+017/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
+Output written on main.pdf (12 pages, 338513 bytes).
 PDF statistics:
- 157 PDF objects out of 1000 (max. 8388607)
- 111 compressed objects within 2 object streams
+ 167 PDF objects out of 1000 (max. 8388607)
+ 118 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 

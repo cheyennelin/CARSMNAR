@@ -75,15 +75,15 @@ For RGCARS, most researches in literature directly utilize the extracted conextu
 \section{ Model}\label{sec:mnar}
 \subsection{Utility Surplus}
 %definition: utility, utility surplus
-In Economics, {\em utility} is an important property of any commodity. It measures the satisfaction consumers get by purchasing an item. Money, as a special case of commodity, can also be measured by a utility function. Let's denote the commodity utility a consumer $u$ gains from item $v$ $UC(u,v)$, the item's price $p$, the money utility for the user $UM(p,v)$,  then the {\em utility surplus} in this particular purchase $US(u,v)$ is the difference between the commodity utility and the money utility  $US(u,v)=UC(u,v)-UM(p,v)$,.
+In Economics, {\em utility} is an important property of any commodity. It measures the satisfaction consumers get by purchasing an item. Money, as a special case of commodity, can also be measured by a utility function. Let's denote the commodity utility a consumer $u$ gains from item $v$ $UC(u,v)$, the item's price $p$, the money utility for the user $UM(p,v)$,  then the {\em utility surplus} in this particular purchase $US(u,v)$ is the difference between the commodity utility and the money utility  $US(u,v)=UC(u,v)-UM(u,p)$,.
 
 %utility: user preference and commodity feature
-A common assumption is that the commodity utility can be modeled as a linear combination of user preferences over commodity features~\cite{}.  Without ambiguity the user preference is represented as $u \in R^K$ on $K$ potential aspects, and the commodity feature is represented as $v\in R^K$ on $K$ potential aspects, we have $UC(u,v)=uv$
+A common assumption is that the commodity utility can be modeled as a linear combination of user preferences over commodity features~\cite{}.  Without ambiguity the user preference is represented as $u \in R^K$ on $K$ potential aspects, and the commodity feature is represented as $v\in R^K$ on $K$ potential aspects. According to the law of diminishing marginal utility, $UM(p,v)$ is also a linearfunction of $p$. It is convenient to define an additional element in $v$ for the price $p$ and in $u$ to depict how sensitive the consumer is to the price. Hence we can the money we have $US(u,v)=uv$
 
 %satisfaction relation with utility surplus
 Usually the commodity utility can not be directly counted, but can be inferred from observed consumptions. In recommender systems, we have a collection of ratings. Suppose in preprocessing we polarize the ratings so a binary rating $x\in\{0,1\}$ indicates whether the user publishes a positive opinion. We make the following manipulation to ensure that the utility surplus coincides with a probability of generating a rating.
 \begin{equation}\label{equ:utility}
-p(x_{u,v}=1|\mathbf{u,v})=\frac{1}{1+\exp{[-uv + UM(u,v)]}}, 
+p(x_{u,v}=1|\mathbf{u,v})=\frac{1}{1+\exp{[-uv]}}, 
 \end{equation}
 The economic interpretation is clear. If the user is satisfied with the consumption, $US(u,v)>0$ , then $p(x_{u,v}=1)>0.5$, which suggests that $u$ is likely to assign a positive rating.
 
@@ -94,7 +94,7 @@ We extend the definition of utility surplus to the CARS problem. Intuitively the
 
 Similarly, we observe user feedbacks on the contextual consumptions. Suppose $y_{c,v} \in \{0,1\}$ is the binary user opinion on how good the commodity $v$ is under a certain context scenario $c$, we have:
 \begin{equation}\label{equ:contextualutility}
-p(y_{c,v}=1|\mathbf{a(c),v})=\frac{1}{1+\exp{[-a(c)v+UM(p,v)]}}.
+p(y_{c,v}=1|\mathbf{a(c),v})=\frac{1}{1+\exp{[-a(c)v]}}.
 \end{equation}
 
 
@@ -112,10 +112,9 @@ The above intuition is modeled by an XOR operation. Suppose the binary variable 
 Next we explore the relations between contextual phrases in a review and the context scenario.  A user chooses the appropriate  contextual phrases  to describe the context scenario unknown to us. Therefore the context scenario can be inferred because observing  a contextual phrase is probabilistically dependent on the hidden context scenario . For example,  a business trip is likely to happen on weekdays, a family trip is likely to happen on weekends or holidays. Like many topic models, we mimic a generation process of the user producing a review. For simplicity, we denote any word or contextual phrase $w$. We use $\beta\in R^{(C+1)\times W}$ to represent the distribution, where $C$ is the number of context scenarios, $\beta_{0,w}$ is the probability of observing a word $w$ under no context scenario, $\beta_{c,w},c>0$ is the probability of observing a word $w$ given the context scenario $c$.
 
 %procedure
-Putting the utility surplus theory and the MNAR assumption on contextual information in a Bayesian probablistic model, we derive the following Conditional Contextual Comparison (CCC) model, depicted in Fig.~\ref{}. We assume the following procedure. Given user preference $u\sim \mathcal{N}(0,\sigma_u^2)$, commodity feature $v\sim \mathcal{N}(0,\sigma_v^2)$, contextual preference per context $a(c)\sim \mathcal{N}(0,\Sigma_a^2)$, context parameter $\alpha\sim Dirichlet(\pi)$, for any purchase made by user $u$ on commodity $v$:
+Putting the utility surplus theory and the MNAR assumption on contextual information in a Bayesian probablistic model, we derive the following Conditional Contextual Comparison (CCC) model, depicted in Fig.~\ref{fig:model}. We assume the following procedure. Given user preference $u\sim \mathcal{N}(0,\sigma_u^2)$, commodity feature $v\sim \mathcal{N}(0,\sigma_v^2)$, contextual preference per context $a(c)\sim \mathcal{N}(0,\Sigma_a^2)$, context parameter $\alpha\sim Dirichlet(\pi)$, for any purchase made by user $u$ on commodity $v$:
 \begin{itemize}
-\item A context scenario $c$ is chosen. This is modeled by generating a $C-dimensional$ vector $s\in R^C$  where $s_c=1$ and $s_j=0,j\neq c$ for any other context scenario. Therefore in this step generate the switch $s\sim Discrete(\alpha) $
-\item A money utility is generated $m\sim \mathcal{N}(0,\sigma^2)$
+\item A context scenario $c$ is chosen. This is modeled by generating a $C-dimensional$ vector $s\in R^C$  where $s_c=1$ and $s_j=0,j\neq c$ for any other context scenario. Therefore in this step generate the switch $s\sim Mult(\alpha) $
 \item The user obtains a general rating $x_{u,v}\sim Bern(\frac{1}{1+\exp{[-uv + m ]}})$
 \item The user obtains a contextual rating $y_{c,v}\sim Bern( \frac{1}{1+\exp{[-a(c) v+m]}})$
 \item Choose the response $p(r_{u,v}=1|x_{u,v},y_{u,v})=(1-x_{u,v}y_{u,v})-(1-x_{u,v})(1-y_{u,v})$. If the response is positive $r_{u,v}=1$, the contextual rating is displayed $y_{u,v}$ is observable; otherwise  $r_{u,v}=0$, the general rating is revealed $x_{u,v}$ is observed..
@@ -136,21 +135,79 @@ Putting the utility surplus theory and the MNAR assumption on contextual informa
 \centerline{
 \begin{tabular}{|c|}
 \hline
-Variable \& Interpretation \\\hline\hline
+\bf{Parameter \& Interpretation} \\\hline\hline
 $a(c) \in R^K$ \\ Context aware preference \\\hline
 $u \in R^K$ \\ User preference \\\hline
 $v \in R^K$ \\ Commodity features \\\hline
-$s \in R^C, s_c\in \{0,1\}, \Sigma_c s_c =1$ \\ Context indicators \\\hline
+$\alpha \in R^C, \alpha_c\in (0,1), \sum_c \alpha_c=1 $ \\ Global context distribution \\\hline
+$\beta \in R^{(C+1)\times |W|}$ \\ Word distribution \\\hline
+\hline
+\bf{Variable \& Interpretation }\\\hline\hline
+$s \in R^C, s_c\in \{0,1\}, \Sigma_c s_c =1$ \\ Context indicators, not observable \\\hline
 $x \in \{0,1\}$ \\ Context irrelevant rating, partially observable \\\hline
 $y \in \{0,1\}$ \\ Context aware rating, partially observable \\\hline
 $r \in \{0,1\}$ \\  response observation\\whether the review contains contextual information\\\hline
-$\beta \in R^{(C+1)\times |W|}$ \\ Word distribution \\\hline
+\hline \bf{ Hyperparameters \& Interpretation} \\\hline\hline
+$\sigma_a $ Variance for $a$ \\\hline
+$\sigma_u $ Variance for $u$ \\\hline
+$\sigma_v $  Variance for $v$ \\\hline
+$\pi $  Dirichlet hyperparameter for $\alpha$ \\\hline
+$\gamma$  Dirichlet hyperparameter for $\beta$ \\\hline
+\hline
 \end{tabular}}
 \vfill
 \centerline{(b) List of notations for variables}
 \end{minipage}
-\caption{The Conditional Contextual Comparison (CCC) Model}
+\caption{The Conditional Contextual Comparison (CCC) Model}\label{fig:model}
 \end{figure}
+
+\subsection{Inference}
+We aim to optimize the likelihood of generating the observations $D=\{<r,x,y,\{w\}>\}$, where $r$ is the response indicating whether the review contains contextual information, $x,y$ are partially observed ratings, $\{w\}$ is a set of words in the review. If the feedback does not have any contextual information, $r=0$, $x$ is observed, $y=1-x$ can be inferred easily.  Given the parameter space $\Theta=(u,v,a,\alpha)$, we have: 
+\begin{equation}\label{equ:likelihoodmissing}
+\ln p(r=0|\Theta)= \sum_{w\in r} \ln p(w|\beta_0) + \ln (\sum_c p(y|a_c,v)p(s=c|\alpha)) + \ln p(x|v,u).
+\end{equation}
+If we can extract contextual information from the review, then $r=1$, $y$ is observed, $x=1-y$ can be inferred, we have:
+\begin{equation}\label{equ:likelihood}
+\ln p(r=1|\Theta)= \sum_{w\in r} \ln p(w|\beta_c) p(s=c|\alpha) + \ln (\sum_c p(y|a_c,v)p(s=c|\alpha)) + \ln p(x|v,u).
+\end{equation}
+
+We use the general EM algorithm. In the E-step, for each feedback, we compute the posterior probability, denoted as $f(s,c)=p(s_{u,v}=c|x_{u,v},y_{u,v},\mathbf{w},\Theta^{old}$.  $f(s,c)$ is average over all $c$ for each $s$. Again, if the corresponding review contains contextual information $r=0$, we have:
+
+\begin{equation}\label{equ:estep1}
+f(s,c)\propto [\frac{1}{1+\exp{(-a_c v) })}]^{1-x_{u,v}} [\frac{\exp{(-a_c v)}}{1+\exp{(-a_c v) })}]^{x_{u,v}} [\frac{1}{1+\exp{(-u v) })}]^{x_{u,v}} [\frac{\exp{(-uv)}}{1+\exp{(-a_c v) })}]^{1-x_{u,v}}.
+\end{equation}
+
+if the corresponding review does not contain contextual information $r=1$, we have:
+
+\begin{equation}\label{equ:estep2}
+f(s,c)\propto [\frac{1}{1+\exp{(-a_c v) })}]^{y_{u,v}} [\frac{\exp{(-a_c v)}}{1+\exp{(-a_c v) })}]^{1-y_{u,v}} [\frac{1}{1+\exp{(-u v) })}]^{1-y_{u,v}} [\frac{\exp{(-uv)}}{1+\exp{(-a_c v) })}]^{y_{u,v}}.
+\end{equation}
+
+In the M-step, we first fix $u,v,a$ and maximize over $\beta$.
+
+\begin{equation}\label{equ:mstepbeta}
+\beta_{c,w}=\frac{\sum_{w\in s} f(s,c)}{\sum_{w} \sum_s f(s,c)}
+\end{equation}
+
+Since maximizing over $u,v,a$ is infeasible, we adopt a generalized EM to increase the likelihood. We fix $\beta, v, a $ to update $u$.
+
+\begin{equation}\label{equ:mstepu}
+u_k = u_k - p \{\sum_{s\in u} \sum_c f(s,c) [\frac{\sum_{r=1,y=1}\sum_{r=0,x=0}-v_k+\sum_{r=1,y=0}\sum_{r=0,x=1}v_k(\exp{(-uv)})}{1+\exp{(-uv)}}]\},
+\end{equation}
+where $p$ is the step length.
+
+We fix $\beta, v, u $ to update $a$.
+
+\begin{equation}\label{equ:mstepa}
+a_{c,k} = a_{c,k} - p \{\sum_s  f(s,c) [\frac{\sum_{r=1,y=0}\sum_{r=0,x=1}-v_k+\sum_{r=1,y=1}\sum_{r=0,x=0}v_k(\exp{(-a_c v)})}{1+\exp{(-a_c v)}}]\}.
+\end{equation}
+
+We fix $\beta, a, u $ to update $v$.
+
+\begin{eqnarray}\label{equ:mstepa}
+v_k = v_k - p \{\sum_{s\in v} \sum_c f(s,c) [\frac{\sum_{r=1,y=0}\sum_{r=0,x=1}-a_{c,k}+\sum_{r=1,y=1}\sum_{r=0,x=0}a_{c,k}(\exp{(-a_c v)})}{1+\exp{(-a_c v)}} \\ \nonumber
++ \frac{\sum_{r=1,y=1}\sum_{r=0,x=0}-u_k+\sum_{r=1,y=0}\sum_{r=0,x=1}u_k(\exp{(-uv)})}{1+\exp{(-uv)}}  ]\},
+\end{eqnarray}
 
 
 

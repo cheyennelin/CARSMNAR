@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  10 MAR 2018 14:41
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  10 MAR 2018 17:24
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -578,23 +578,14 @@ Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
 
 [1{/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (./model.aux) ) 
 Here is how much of TeX's memory you used:
- 14110 strings out of 492995
- 310364 string characters out of 6132704
- 374789 words of memory out of 5000000
- 17409 multiletter control sequences out of 15000+600000
+ 14098 strings out of 492995
+ 310200 string characters out of 6132704
+ 373609 words of memory out of 5000000
+ 17397 multiletter control sequences out of 15000+600000
  6678 words of font info for 24 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  55i,8n,78p,411b,716s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -604,7 +595,7 @@ m/cmmi8.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/
 cmr10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cm
 r8.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.
 pfb>
-Output written on model.pdf (1 page, 44968 bytes).
+Output written on model.pdf (1 page, 44096 bytes).
 PDF statistics:
  31 PDF objects out of 1000 (max. 8388607)
  22 compressed objects within 1 object stream
