@@ -39,7 +39,8 @@ Generally CARS suffers from the data sparsity problem. We have to deal with two 
 % problem: missing? not at random
 Existing research efforts simply discard reviews without any contextual information. They fail to make full use of user feedback, because the rating could still be informative even that the context is not given. We  show here that this strategy is problematic when the contextual information in reviews are missing not at random.  For example, many social studies have found that users write online reviews to ``brag or moan''~\cite{}, therefore online users give the contextual information on purpose in respond to an extreme experience under the given contexts. Consider the illustrative example in Fig~\ref{fig:example}. On the left  the user is satisfied with ... under context ... On the right, the user is ...
 
-To address the above problem, we propose a novel model which is based on missing not at random assumptions. To connect the dots among ratings, non-contextual reviews and contextual reviews, we borrow the ideas of marginal utility theory~\cite{samuelson1937note}. Utility surplus is an economic concept to measure consumer's ``satisfaction'' or ``pleasure''. We expand the definition of utility surplus to a context aware setting: when a consumer obtains more satisfaction from  a purchase under a certain context (contextual utility) than a general purchase under any context (general utility), he/she is more likely to post a piece of positive review regarding the context. Otherwise, if a consumer obtains less contextual utility than general utility, he/she is likely to post a piece of negative review regarding the context. If the consumer considers the satisfactions are equivalent under any context, he/she is more likely to give a non contextual review. 
+%MNAR assumption
+To address the above problem, we propose a novel model which is based on missing not at random assumptions. To connect the dots among ratings, non-contextual reviews and contextual reviews, we borrow the ideas of marginal utility theory~\cite{samuelson1937note}. Utility surplus is an economic concept to measure a consumer's ``satisfaction'' or ``pleasure''. Utility surplus is the difference between what a consumer pays and what a consumer gains. We expand the definition of utility surplus to a context aware setting: what a consumer benefits from a purchase under the specific context. We then assume that the user will compare the general utility surplus given no context and the context aware utility surplus under a specific context. The probability of he/she giving a contextual review is dependent on the result of the comparison.
 
 %(2) high dimensional 
 The second issue is \textbf{the high dimensionality of context space}. Most prior works modeled the ratings as a hypercube. With the massive number of possible values for each contextual dimension, the data sparsity problem is more severe. Take the location context for example, the purchase could happen at any place, thus it is very difficult to collect enough  ratings which occur in the same place. 
@@ -51,7 +52,7 @@ A strategy that departs from data cube approach is to project contextual ratings
 
 % contribution: first MNAR in context aware recommendation and text mining 
 
-Our contributions are three folds. (1) To the best of our knowledge, our work is the first in literature to apply MNAR properties to CARS and text mining based recommendations.  We incorporate the utility theory in this novel model. (2) We address the data sparsity problem by exploiting non contextual reviews and embedding in a dimension reduction models. (3) We deliver recommendations that are both accurate and more explainable. 
+Our contributions are three folds. (1) To the best of our knowledge, our work is the first in literature to apply MNAR properties to CARS and text mining based recommendations.  We incorporate the utility theory in this novel model. (2) We address the data sparsity problem by exploiting non contextual reviews and embedding in a dimension reduction model. (3) We deliver recommendations that are both accurate and more explainable. 
 
 % paper structure 
 
@@ -73,21 +74,108 @@ For RGCARS, most researches in literature directly utilize the extracted conextu
 
 \section{ Model}\label{sec:mnar}
 \subsection{Utility Surplus}
-In Economics, utility is an important property of any commodity. It measures the satisfaction consumers get by purchasing an item. Money, as a special case of commodity, can also be measured by a utility function. If the consumer is willing to pay a certain amount of money, which is the price $v_p$, to purchase an item $v$, then the utility surplus $US(u,v)=UC(u,v)-UM(u_p,v_p)$, which is the commodity utility $UC$ minus the money utility $UM$, will be positive.
-Usually, the commodity utility can not be directly counted, but can be inferred from observed consumptions. Moreover, a common assumption is that the commodity utility can be modeled as a linear combination of user preferences over commodity features. We extend this theory to the CARS problem. Suppose the user preference is represented by $u$, and contextual preference is represented by $a$, then the commodity utility under context $k$ is measured by a combination of user specifict utility and context aware utility: $UC_k(u,v)= \sum_c (\alpha a_{k,c} + (1-\alpha) u_c) v_c$, where $a_{k,c}$ is the contextual preference under context $k$ to the commodity feature $c$, $u_c$ is the user preference to $c$, and $v_c$ is the quality of item $v$ on feature $c$.
-The utility function of money could be more complicated. However, in this scenario, the consumers are paying a very small portion of money, compared to their incomes. So according to the law of diminishing marginal utility, a linear function can be adopted to measure the decrease of consumer satisfaction by losing the money, i.e. $UM(u_p,v_P)=u_P v_P$. Here $u_P$ can also be interpreted as users' sensitiveness to price.
-We make the following manipulation to ensure that the score coincides with a probability.
-\begin{equation}\label{equ:pcx}
-p(x_{u,v,k}=1|\mathbf{u,a,v})=g(UC_k(\mathbf{u,v}))=\frac{1}{1+\exp{-UC_k(\mathbf{u,v})}}
+%definition: utility, utility surplus
+In Economics, {\em utility} is an important property of any commodity. It measures the satisfaction consumers get by purchasing an item. Money, as a special case of commodity, can also be measured by a utility function. Let's denote the commodity utility a consumer $u$ gains from item $v$ $UC(u,v)$, the item's price $p$, the money utility for the user $UM(p,v)$,  then the {\em utility surplus} in this particular purchase $US(u,v)$ is the difference between the commodity utility and the money utility  $US(u,v)=UC(u,v)-UM(p,v)$,.
+
+%utility: user preference and commodity feature
+A common assumption is that the commodity utility can be modeled as a linear combination of user preferences over commodity features~\cite{}.  Without ambiguity the user preference is represented as $u \in R^K$ on $K$ potential aspects, and the commodity feature is represented as $v\in R^K$ on $K$ potential aspects, we have $UC(u,v)=uv$
+
+%satisfaction relation with utility surplus
+Usually the commodity utility can not be directly counted, but can be inferred from observed consumptions. In recommender systems, we have a collection of ratings. Suppose in preprocessing we polarize the ratings so a binary rating $x\in\{0,1\}$ indicates whether the user publishes a positive opinion. We make the following manipulation to ensure that the utility surplus coincides with a probability of generating a rating.
+\begin{equation}\label{equ:utility}
+p(x_{u,v}=1|\mathbf{u,v})=\frac{1}{1+\exp{[-uv + UM(u,v)]}}, 
 \end{equation}
-The economic interpretation is clear. If the user is satisfied with the consumption for the context, $US_k(u,v)>0$ , then $p(c|x)>0.5$, which suggests that it is possible to choose the write a positive review.
+The economic interpretation is clear. If the user is satisfied with the consumption, $US(u,v)>0$ , then $p(x_{u,v}=1)>0.5$, which suggests that $u$ is likely to assign a positive rating.
+
+
+
+%context aware utility 
+We extend the definition of utility surplus to the CARS problem. Intuitively the user preferences under various contexts will be different. For example, if a couple is traveling in their honeymoon, then they are probably looking for a romantic resort hotel.  Consider the same couple on a business trip, they are more likely to be interested  in a chain hotel near the airport. We use similar notation to represent the contextual preference $a(c)\in R^K$ of any given {\em context scenario} $c$. Our assumption is that, the context aware utility surplus given a certain context scenario $c$ is related to contextual preference $a(c)$ instead of individual preference $US_c(a,v)=a(c)v$. 
+
+Similarly, we observe user feedbacks on the contextual consumptions. Suppose $y_{c,v} \in \{0,1\}$ is the binary user opinion on how good the commodity $v$ is under a certain context scenario $c$, we have:
+\begin{equation}\label{equ:contextualutility}
+p(y_{c,v}=1|\mathbf{a(c),v})=\frac{1}{1+\exp{[-a(c)v+UM(p,v)]}}.
+\end{equation}
+
+
+\subsection{ Condition Contextual Missingness on Comparison}
+%background
+In a CARS based on online reviews,  every user feedback consists of a rating and a piece of review. By adopting text mining techniques, we can extract contextual phrases from the reviews, i.e. phrases describing time, locations and companions. It is possible that not every piece of review contains contextual information. As we have shown in Sec.~\ref{sec:intro}, it is problematic to discard user feedbacks without any contextual information. The rating is valuable. Although the rating can not be mapped to any context, it reflects user preference and commodity characteristics.
+ 
+%intuition: why a contextual information is missing
+Our intuition is that the contextual information is not missing at random. The purchase is deemed to happen under a certain context scenario. However when the consumer is about to publish ratings and reviews, he/she could choose to not reveal the context scenario within which the purchases is made. The consumer will compare the contextual utility surplus (related to the contextual preference) and the general utility surplus (related to individual preference).  When a consumer is significantly more satisfied by the contextual utility, he/she is likely to post a piece of positive review regarding the context. Otherwise, if a consumer obtains significantly less contextual utility than general utility, he/she is likely to post a piece of negative review regarding the context. If the consumer considers the satisfactions are equivalent, he/she is more likely to give a non contextual review. 
+
+%XOR operation
+The above intuition is modeled by an XOR operation. Suppose the binary variable $r\in\{0,1\}$ indicates whether the review contains contextual information, the value of $r$ is determined by the polarity of contextual satisfaction $x$ and general satisfaction $y$: $r=x\bigoplus  y$. In other words, the contextual information is present if and only if one of $x,y$ is positive and the other is negative. $r=(1-xy)-(1-x)(1-y)$.
+
+%contextual information
+Next we explore the relations between contextual phrases in a review and the context scenario.  A user chooses the appropriate  contextual phrases  to describe the context scenario unknown to us. Therefore the context scenario can be inferred because observing  a contextual phrase is probabilistically dependent on the hidden context scenario . For example,  a business trip is likely to happen on weekdays, a family trip is likely to happen on weekends or holidays. Like many topic models, we mimic a generation process of the user producing a review. For simplicity, we denote any word or contextual phrase $w$. We use $\beta\in R^{(C+1)\times W}$ to represent the distribution, where $C$ is the number of context scenarios, $\beta_{0,w}$ is the probability of observing a word $w$ under no context scenario, $\beta_{c,w},c>0$ is the probability of observing a word $w$ given the context scenario $c$.
+
+%procedure
+Putting the utility surplus theory and the MNAR assumption on contextual information in a Bayesian probablistic model, we derive the following Conditional Contextual Comparison (CCC) model, depicted in Fig.~\ref{}. We assume the following procedure. Given user preference $u\sim \mathcal{N}(0,\sigma_u^2)$, commodity feature $v\sim \mathcal{N}(0,\sigma_v^2)$, contextual preference per context $a(c)\sim \mathcal{N}(0,\Sigma_a^2)$, context parameter $\alpha\sim Dirichlet(\pi)$, for any purchase made by user $u$ on commodity $v$:
+\begin{itemize}
+\item A context scenario $c$ is chosen. This is modeled by generating a $C-dimensional$ vector $s\in R^C$  where $s_c=1$ and $s_j=0,j\neq c$ for any other context scenario. Therefore in this step generate the switch $s\sim Discrete(\alpha) $
+\item A money utility is generated $m\sim \mathcal{N}(0,\sigma^2)$
+\item The user obtains a general rating $x_{u,v}\sim Bern(\frac{1}{1+\exp{[-uv + m ]}})$
+\item The user obtains a contextual rating $y_{c,v}\sim Bern( \frac{1}{1+\exp{[-a(c) v+m]}})$
+\item Choose the response $p(r_{u,v}=1|x_{u,v},y_{u,v})=(1-x_{u,v}y_{u,v})-(1-x_{u,v})(1-y_{u,v})$. If the response is positive $r_{u,v}=1$, the contextual rating is displayed $y_{u,v}$ is observable; otherwise  $r_{u,v}=0$, the general rating is revealed $x_{u,v}$ is observed..
+\item Choose the words for $N$ times. If the response is to not reveal any contextual information, the word is chosen from a general word distribution $p(w|\beta,r_{u,v}=0,s_{u,v})=\beta_{0,w}$. If the response is to depict the context scenario, the word is chosen from the context specific word distribution $p(w|\beta,r_{u,v}=1,s_{u,v})=\prod_c  \beta_{s_{u,v,c},w}^{s_{u,v,c}}$
+\end{itemize}
+
+%model plate + notation
+
+\begin{figure}
+\begin{minipage}[b]{.48\linewidth}
+\centerline{
+\includegraphics{model.eps}}
+\centerline{(a) Plate notation for the CCC model}
+\end{minipage}%
+\hfill
+\vspace{2pt}
+\begin{minipage}[b]{.3\linewidth}
+\centerline{
+\begin{tabular}{|c|}
+\hline
+Variable \& Interpretation \\\hline\hline
+$a(c) \in R^K$ \\ Context aware preference \\\hline
+$u \in R^K$ \\ User preference \\\hline
+$v \in R^K$ \\ Commodity features \\\hline
+$s \in R^C, s_c\in \{0,1\}, \Sigma_c s_c =1$ \\ Context indicators \\\hline
+$x \in \{0,1\}$ \\ Context irrelevant rating, partially observable \\\hline
+$y \in \{0,1\}$ \\ Context aware rating, partially observable \\\hline
+$r \in \{0,1\}$ \\  response observation\\whether the review contains contextual information\\\hline
+$\beta \in R^{(C+1)\times |W|}$ \\ Word distribution \\\hline
+\end{tabular}}
+\vfill
+\centerline{(b) List of notations for variables}
+\end{minipage}
+\caption{The Conditional Contextual Comparison (CCC) Model}
+\end{figure}
+
+
+
+%???need discussion???
 \section{Application}\label{sec:method}
+%
+
+ 
+ 
 %problem definition
 \subsection{ Recommendation}
 \subsection{Contextual Information Extraction}
 
 
 \section{Experiment}\label{sec:exp}
+\subsection{Experimental Setup}
+
+\subsection{Context Aware Recommendation}
+
+\subsection{Contextual Phrases Distribution}
+
+\subsection{Parameter Performance}
+
+\subsection{Case Study}
+
 \section{Conclusion}~\label{sec:con}
 In this paper, we mainly focus on exploring the potencial of implicit feedback in a review guided context aware recommender system. We present new models, based on the utility surplus theory, to tackle the implicit feedback problem by treating them as complete observations or missing not at random observations. We systematically compare the assumptions and performances of thes models.
 The most important academic contribution of this paper is that, to the best of our

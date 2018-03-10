@@ -1,0 +1,59 @@
+\documentclass[11pt]{report}
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+\begin{document}
+\begin{figure}
+  \centering
+  \tikz{ %
+  %hyperparameters
+  \node[const](avariance){$\sigma_a^2$};
+  \node[const,right = of avariance](hyperalpha){$\pi$};
+  \node[const,right=of hyperalpha](vvariance){$\sigma_v^2$};
+  \node[const, right=of vvariance](mvariance){$\sigma_m^2$};
+  \node[const,right=of mvariance](uvariance){$\sigma_u^2$};
+
+   
+  %latent nodes
+    \node[latent, below = of avariance] (a) {$a$} ; %
+      \edge{avariance}{a};
+    \node[latent, below= 1.1 of hyperalpha] (alpha) {$\alpha$};
+      \edge{hyperalpha}{alpha};
+    \node[latent, below=of vvariance] (v) {$v$};
+      \edge{vvariance}{v};
+     \node[latent, below=of uvariance] (u) {$u$};
+       \edge{uvariance}{u};
+       
+       %per purchase observation
+     \node[latent,below = 2 of alpha](s) {$s$};
+     \node[latent, below= 3.5 of mvariance] (m) {$m$};
+    \node[obs, below=of s](y){$y$};
+      \node[obs, below=1.2 of m] (x){$x$};
+      \edge{alpha}{s};
+      \edge{mvariance}{m};
+    \edge{a}{y};
+    \edge{v}{y};
+    \edge{m}{y};
+    \edge{s}{y};
+    \edge{v}{x};
+    \edge{m}{x};
+    \edge{u}{x};
+    
+    \node[obs,below = 5 of v](r){$r$};
+    \node[obs,below= of r](w){$w$};
+    \node[latent,right = of w] (beta){$\beta$};
+      \edge{x}{r};
+    \edge{y}{r};
+    \edge{r}{w};
+    \edge{beta}{w};
+    \edge{s}{w};
+       \node[const,right = of beta] (gamma){$\gamma$};
+  \edge{gamma}{beta};
+  
+     \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {plate1} {(a)} {C}; 
+        \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12cm] {plate2} {(v)} {V}; 
+           \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12cm] {plate3} {(u)} {U}; 
+              \plate[inner sep=0.45cm, xshift=-0.12cm, yshift=0.12cm] {plate4} {(s) (m) (y) (x) (w)} {R}; 
+
+ }
+\end{figure}
+\end{document}
