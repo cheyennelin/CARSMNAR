@@ -1,0 +1,61 @@
+\documentclass[11pt]{report}
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+\begin{document}
+\begin{figure}
+  \centering
+  \tikz{ %
+
+  %latent nodes
+   \node[latent,] (alpha) {$\alpha$};
+    \node[latent, right = of alpha] (a) {$a$} ; %
+    \node[latent, right =of a] (v) {$v$};
+     \node[latent, right =of v] (u) {$u$};
+  
+       
+       %per purchase observation
+     \node[latent,below = 2 of alpha](c) {$c$};
+   %  \node[latent, below= 3.5 of mvariance] (m) {$m$};
+    \node[obs, below=3 of a](y){$y$};
+      \node[obs, right=2 of y] (x){$x$};
+      \edge{alpha}{c};
+ 
+    \edge{a}{y};
+    \edge{v}{y};
+   % \edge{m}{y};
+    \edge{c}{y};
+    \edge{v}{x};
+    %\edge{m}{x};
+    \edge{u}{x};
+    
+    \node[obs,below = 2 of y](r){$r$};
+    \node[latent,below =2 of x](s) {$s$};
+    \edge{y}{s};
+    \edge{x}{s};
+    
+   
+\node[latent, below =5of r](gamma){$\gamma$};
+ \node[obs,below= of s](w){$w$};
+ \edge{gamma}{r};
+ \edge{gamma}{s};
+ 
+    \node[latent,below = 3.2 of w] (beta){$\beta$};
+      \edge{x}{r};
+    \edge{y}{r};
+  \edge{s}{w};
+    \edge{beta}{w};
+    \edge{s}{w};
+ \edge{c}{w};
+
+  
+     \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {plate1} {(a)} {C}; 
+        \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12cm] {plate2} {(v)} {V}; 
+           \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12cm] {plate3} {(u)} {U}; 
+           \plate[inner sep=0.45cm, xshift=-0.12cm, yshift=0.12cm] {plate5} {(s) (w)} {N}; 
+              \plate[inner sep=0.6cm, xshift=-0.12 cm, yshift=0.12cm] {plate4} { (y) (x) (c) (r) (plate5) } {R}; 
+\plate[inner sep=0.45cm, xshift=-0.12cm, yshift=0.12cm] {plate6} {(beta)} {C+1}; 
+\plate[inner sep=0.45cm, xshift=-0.12cm, yshift=0.12cm] {plate7} {(gamma)} {4}; 
+
+ }
+\end{figure}
+\end{document}
