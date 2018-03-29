@@ -1,0 +1,52 @@
+\documentclass[11pt]{report}
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+\begin{document}
+\begin{figure}
+  \centering
+  \tikz{ %
+%hyper parameters
+  %latent nodes
+    \node[latent] (a) {$a$} ; %
+    \node[latent, right =of a] (v) {$v$};
+     \node[latent, right =of v] (u) {$u$};
+  
+       
+       %per purchase observation
+
+     \node[const, left =  of a] (sigma) {$\sigma^2$};
+    \node[obs, below=3 of a](y){$y$};
+      \node[obs, right=2 of y] (x){$x$};
+ 
+    \edge{a}{y};
+    \edge{v}{y};
+    \edge{sigma}{y};
+    \edge{v}{x};
+    \edge{sigma}{x};
+    \edge{u}{x};
+    
+    \node[obs,below = 2 of y](r){$r$};
+  \edge{y}{r};
+\edge{x}{r};
+ 
+  
+
+
+  
+     \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {plate1} {(a)} {C}; 
+        \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12cm] {plate2} {(v)} {V}; 
+           \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12cm] {plate3} {(u)} {U}; 
+     \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {platey} {(y)} {C}; 
+ \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {plater} {(r)} {C}; 
+              \plate[inner sep=0.6cm, xshift=-0.12 cm, yshift=0.12cm] {plate4} { (y) (x) (r)  } {R}; 
+
+
+ }
+\end{figure}
+
+\begin{eqnarray}
+y_c\sim \mathcal{N}((a_c+u)v,\sigma^2)\\
+x\sim \mathcal{N}(uv,\sigma^2)\\
+p(r_c=1)=\frac{1}{1+\exp{|x_c-y|}}
+\end{eqnarray}
+\end{document}
