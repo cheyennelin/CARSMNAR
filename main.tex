@@ -14,7 +14,7 @@
 \maketitle
 
 \begin{abstract}
-
+Is it possible to employ MNAR CARS MNAR 
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
@@ -78,7 +78,8 @@ For RGCARS, most researches in literature directly utilize the extracted conextu
 In Economics, {\em utility} is an important property of any commodity. It measures the satisfaction consumers get by purchasing an item. Money, as a special case of commodity, can also be measured by a utility function. Let's denote the commodity utility a consumer $u$ gains from item $v$ $UC(u,v)$, the item's price $p$, the money utility for the user $UM(p,v)$,  then the {\em utility surplus} in this particular purchase $US(u,v)$ is the difference between the commodity utility and the money utility  $US(u,v)=UC(u,v)-UM(u,p)$,.
 
 %utility: user preference and commodity feature
-A common assumption is that the commodity utility can be modeled as a linear combination of user preferences over commodity features~\cite{}.  Without ambiguity the user preference is represented as $u \in R^K$ on $K$ potential aspects, and the commodity feature is represented as $v\in R^K$ on $K$ potential aspects. According to the law of diminishing marginal utility, $UM(p,v)$ is also a linearfunction of $p$. It is convenient to define an additional element in $v$ for the price $p$ and in $u$ to depict how sensitive the consumer is to the price. Hence we can the money we have $US(u,v)=uv$
+A common assumption is that the commodity utility can be modeled as a linear combination of user preferences over commodity features~\cite{}.  Without ambiguity the user preference is represented as $u \in R^K$ on $K$ potential aspects, and the commodity feature is represented as $v\in R^K$ on $K$ potential aspects. According to the law of diminishing marginal utility, $UM(p,v)$ is also a linear
+function of $p$. It is convenient to define an additional element in $v$ for the price $p$ and in $u$ to depict how sensitive the consumer is to the price. Hence we can the money we have $US(u,v)=uv$
 
 %satisfaction relation with utility surplus
 Usually the commodity utility can not be directly counted, but can be inferred from observed consumptions. In recommender systems, we have a collection of ratings. Suppose in preprocessing we polarize the ratings so a binary rating $x\in\{0,1\}$ indicates whether the user publishes a positive opinion. We make the following manipulation to ensure that the utility surplus coincides with a probability of generating a rating.
