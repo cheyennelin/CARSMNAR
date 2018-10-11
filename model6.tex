@@ -1,0 +1,72 @@
+\documentclass[11pt]{report}
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+\begin{document}
+\begin{figure}
+  \centering
+  \tikz{ 
+%hyper parameters
+\node[const](delta) {$\delta$};
+\node[const, right = 3 of delta](eta) {$\eta$};
+
+  % nodes per user per item
+   \node[latent,below = 2 of delta] (theta) {$\theta$};
+    \node[latent, below = 2 of eta] (phi) {$\phi$} ; 
+    \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {plateU} {(theta)} {U}; 
+   \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {plateV} {(phi)} {V}; 
+	\edge{delta}{theta};
+	\edge{eta}{phi};
+       
+       %per purchase observation
+     \node[latent,below = 2 of theta](z) {$z$};
+    \node[latent, below= 2 of phi] (s) {$s$};
+    \node[obs, below= of z](y){$y$};
+      \node[obs, below= of s] (x){$x$};
+  \node[obs,below = 2 of y](r){$r$};
+
+      \edge{theta}{z};
+    \edge{phi}{s};
+	\edge{z}{y};
+	\edge{z}{x};
+	\edge{s}{x};
+	\edge{s}{y};
+    \edge{y}{r};
+	\edge{x}{r};
+    
+    
+  \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {platey} {(y)} {C}; 
+        \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12cm] {plateobs} {(z) (s)(y)(x)(r)} {R}; 
+        
+%parameters left
+   \node[const, left = 4 of y](zeta) {$\zeta$};
+\node[latent, right = of zeta](alpha){$\alpha$};
+   \plate[inner sep=0.2cm, xshift=-0.12cm, yshift=0.12 cm] {platealpha} {(alpha)} {C}; 
+ \edge{zeta}{alpha};
+ \edge{alpha}{y};
+ 
+%parameters right
+   \node[latent, right = 2 of x](beta) {$\beta$};
+\node[const, right = of beta](epsilon){$\epsilon$};
+ \edge{beta}{x};
+ \edge{epsilon}{beta};
+
+      \node[latent, below = 2 of beta](gamma) {$\gamma$};
+\node[const, right = of gamma](xi){$\xi$};
+ \edge{gamma}{r};
+ \edge{xi}{gamma};
+
+ }
+\end{figure}
+
+\begin{eqnarray}
+\theta\sim Dir(\delta)\\
+\phi \sim Dir(\eta)\\
+\alpha \sim Dir(\zeta)\\
+\beta \sim Dir(\epsilon)\\
+\gamma \sim Dir(\xi)\\
+z\sim Mult(\theta)\\
+s\sim Mult(\phi)\\
+y_c\sim Mult(\alpha_{c,z,s}\\
+x\sim Mult(\beta_{z,s})
+\end{eqnarray}
+\end{document}

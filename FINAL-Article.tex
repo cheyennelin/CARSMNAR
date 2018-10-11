@@ -1,0 +1,532 @@
+\documentclass{ieeeaccess}
+\usepackage{cite}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{subfigure}
+\usepackage{textcomp}
+\usepackage{color}
+\usepackage{colortbl}
+\definecolor{babyblue}{rgb}{0.54, 0.81, 0.94}
+\definecolor{blond}{rgb}{0.98, 0.94, 0.75}
+\definecolor{celadon}{rgb}{0.93, 1, 0.93}
+\newtheorem{myThm}{Theorem}[section]
+\newtheorem{myDef}{Definition}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+\history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
+\doi{10.1109/ACCESS.2017.DOI}
+
+\title{Recommendation with Social Roles}
+\author{\uppercase{Chen Lin \authorrefmark{1}}
+and \uppercase{Dugang Liu \authorrefmark{2}}
+\address[1]{School or Information Science and Technology, Xiamen University, China (e-mail: chenlin@xmu.edu.cn)}
+\address[2]{School or Information Science and Technology, Xiamen University, China (e-mail: dgliu@stu.xmu.edu.cn)}
+}
+
+\markboth
+{C.Lin \headeretal: Recommendation with Social Roles}
+{C.Lin \headeretal: Recommendation with Social Roles}
+
+\corresp{Corresponding author:Chen Lin (e-mail: chenlin@xmu.edu.cn).}
+
+\begin{abstract}
+Social recommender is an active research area. Most previous social recommenders adopt existing social networks to augment recommendations which are based on user preferences. In this contribution, we propose to simultaneously infer the social influence network and the user preferences in a matrix factorization framework. Furthermore, we assume that the influence strength is dependent on the social roles of users. We present an incremental clustering algorithm to detect dynamic social roles. Comprehensive experiments on real data sets demonstrate the efficiency and effectiveness of our model to generate precise recommendations.
+\end{abstract}
+
+\begin{keywords}
+social role,recommender system,social recommendation, matrix factorization
+\end{keywords}
+
+\titlepgskip=-15pt
+
+\maketitle
+
+\section{Introduction}\label{sec:introduction}
+%social recommendation: concept and significance
+\textbf{R}ecommender \textbf{S}ystems (RS) seek to predict user ratings on items by learning user preferences in historical consumptions. Since the early stage of RS, researchers have believed in the ``word of mouth'' effect and adopted social networks to augment predictions which are purely based on individuals' preferences. This type of social network enhanced recommender systems is usually called ``social recommenders''. Social recommender is an active research area. Many studies~\cite{ma2008sorec,ma2009learning,Ma2009Learninga,Jamali2009TrustWalker,AuYeung2011Strength,Ma2011Recommender,Jamali2010matrix,Jamali2011Generalized,Yang2013Social,Krohn-Grimberghe2012Multi,Yao2014Modeling,Forsati2014Matrix,Forsati2015PushTrust} have shown that, social recommenders can produce better recommendations, deal with cold start recommendations, and are more robust to fraud.
+
+%previous research
+In the literature of social recommenders, most works utilize an existing social network and adopt a two-step approach to augment recommendations, i.e. modeling of social networks and recommendations are considered separately. In the first step, the social network is constructed as a graph, with nodes representing peers, and ties representing \textit{social influences}.   In the second step, the social ties are incorporated in the recommender framework either as binary variables, i.e. trust or not trust~\cite{ma2008sorec,ma2009learning,Jamali2010matrix,Yang2013Social,Krohn-Grimberghe2012Multi,Forsati2014Matrix,Forsati2015PushTrust} ; or with heuristically assigned weights~\cite{Ma2009Learninga,Ma2011Recommender,Yao2014Modeling}.  A common sense is that social influences are of greatly varying reliability and strength which could not be accurately determined by simple heuristics. Therefore a few recent works~\cite{AuYeung2011Strength,Jamali2011Generalized} attempt to automatically learn the weights for each tie between two peers. However, such a two-step approach can not take full advantage of the user's preference information, so that the model is often suboptimal.
+
+%challenge
+Furthermore, inferring peer-to-peer strength might raise two challenges. On one hand, communities and social groups are universally observed in human societies. A peer-to-peer social network per se could not explain the  formation of communities and social groups. On the other hand, with the availability of very large social networks online, it is a hurdle for us to efficiently learn the weights for each tie.
+
+%social role
+Social scientists develop the \textit{social role} theory to explain communities and social groups, by ``presuming that persons are members of social positions and hold expectations of their own behaviors and those of other persons''~\cite{Biddle1986Recent}. In recent results~\cite{Zhao2013Inferring}, the author indicates social role is the part that a person plays as a member of a particular society and people behave differently in social situations because they carry different latent social roles. It is possible to capture different social roles in various
+social networks by observing historical behaviorial features. Social influence ``is rooted in social roles'', since social influence occurs ``when we expect people within certain social roles to act according to our expectations for those roles''~\cite{Duff2012THINK}.
+
+Recommendation systems can benefit from the theoretic foundation of social roles and social influences. Let's take the academic recommender for researchers as an example. Suppose we are given the social network of several researchers with their respective social roles, i.e. researchers $a,b,c,d,e$ are students and $f$ is an advisor. As shown in Fig.~\ref{fig:example}, the strength of a social tie (social inference) is dependent on the social roles of both ends.  For example, teachers may expect their students to work on research domains that they are interested, thus teachers have stronger influences on the students' research topics. Tab.~\ref{tab:example} illustrates the hidden researcher preferences over a set of keywords in two domains. In order to predict the preferences for researcher $b$, we must take into account the strength of influence. Though he has more collaborators in domain ``data mining'', his research interest is dominantly influenced by his teacher and thus focuses on domain ``recommender system''. In a word, social role ``advisor'' has more influence than social role ``students'' to $b$ and we can use role specific influence instead of the original peer-to-peer influence.
+
+\Figure[t!](topskip=0pt, botskip=0pt, midskip=0pt){illustration.eps}
+{Illustrative social network. Black nodes are students, red nodes are teachers, thickness of lines indicates strength of influence.\label{fig:example}}
+
+\begin{table}\label{tab:example}
+\arrayrulecolor{white}
+\caption{Illustrative topic distribution for users in Fig.~\ref{fig:example}. Blond columns for topic ``recommender systems'', blue columns for topic ``data mining'', celadon columns for mixture of topics.}\label{fig:example}
+\begin{tabular}{|l|>{\columncolor{blond}}c|>{\columncolor{blond}}c|>{\columncolor{celadon}}c|>{\columncolor{babyblue}}c|>{\columncolor{babyblue}}c|}
+\hline
+user & recommend & matrix & rank & skyline & frequent \\\hline
+a & 1 & 2 &  & 5 & 4 \\\hline
+b & 4 & 5 & 4 & 1 & 1 \\\hline
+c & 1 &  & 1 & 3 & 5 \\\hline
+d &  &  & 4 & 5 &  5\\\hline
+e &  & 1 &  &  &  \\\hline
+f & 5 & 5 & 3 &  &  \\\hline
+\end{tabular}
+\end{table}
+
+
+
+
+%our model
+In this work, we enhance recommender systems by incorporating role specific influence. Human behaviors are complex and dynamic. As a natural consequence, the social role for one individual evolves persistently. Our first step is to identify the social roles for each individual at each timestamp. Given a stream of social network snapshots, we propose to incrementally cluster the roles of peers in each network snapshot.
+
+We then assume that each user-item rating is generated as a weighted combination of users' own preferences and preferences of role specific influence sources. We propose a novel single-step approach to simultaneously infer the social influence network and the user preferences in a matrix factorization framework. The user preferences are learnt while role specific influence is inferred simultaneously by iteration. Our model can be interpreted as a cyclic model. We show that if the roles are static for a period of time, the user preferences inferred in our model are limiting approximation on average ratings given the time lag approaches to zero. %Thus the inference can be conducted by a simplex projection algorithm on average ratings.
+
+%other contribution
+The inferred role specific influence strengths can be treated as a skeleton network. Given a social network of $U$ users, suppose we have detected $K$ roles, the computational complexity and storage costs at each iteration are significantly reduced from $O(U^2)$ to $O(K^2)$. For very big social networks, the skeleton network alone is capable to produce recommendations.
+
+
+Our experiment on real academic data sets shows that our model outperforms state-of-the-art social recommenders. Furthermore, we experimentally demonstrate that the skeleton network significantly cuts down the number of iterations required to converge. The inferred skeleton network is a good abstract of the original network, as in the experiments it produces comparative performance for graph based recommender systems, compared with a full network.
+
+%document structure
+The rest of this paper is organized as follows. Section~\ref{sec:relatedwork} briefly summarizes related researches. Section~\ref{sec:role} and Section~\ref{sec:model} introduce the methodology. Section~\ref{sec:experiment} presents our experimental results and analysis. Section~\ref{sec:conclusion} gives our conclusion of this contribution and future work.
+
+\section{Related Work}\label{sec:relatedwork}
+
+\subsection{Social Recommendation}
+Most state-of-the-art social recommendation systems are within the framework of matrix factorization~\cite{Koren2009Matrix} or its probabilistic variants~\cite{salakhutdinov2008probabilistic}. In general, there are three manners to exploit the social network information. The first style is to allow the connected users to contribute in the ratings. For example, STE~\cite{ma2009learning} presumes that a rating is generated not only by the user's own interest but also his/her trusted friends interests. A similar linear combination scheme is also presented in~\cite{AuYeung2011Strength} and RoRec~\cite{Yao2014Modeling}.
+
+Another type of methods treats the social links as observations. In a similar way to the rating matrix, the binary link matrix is decomposed to hidden user spaces. However, the definition of hidden user spaces could be different. Sorec~\cite{ma2008sorec} employs the user preference vector to factorize the link matrix. TrustMF~\cite{Yang2013Social}, on the contrary, constructs the links from truster-specific and trustee-specific feature vectors, which are then fused as user preference vectors to predict missing ratings.
+
+The third category of research incorporates a regularization term in the original MF optimization objective. According to the social network structure, there would be various forms of regularization terms. SocialMF~\cite{Jamali2010matrix}, SoReg~\cite{Ma2011Recommender} and RoRec~\cite{Yao2014Modeling} fall into this category and apply L2 regularization. The model can be easily expanded to distrust relations, while the intuition is naturally converted to maximize the difference between a user and his/her distrusted neighbors, e.g. RWT and RWD ~\cite{Ma2009Learninga}. Other attempts in this category include ranking alike regularization terms inspired by MR-BPR~\cite{Krohn-Grimberghe2012Multi}. Hinge loss is adopted in PushTrust~\cite{Forsati2015PushTrust} and MF+TD~\cite{Forsati2014Matrix}.
+
+\subsection{Social Role}
+\textit{Social Role} is one of the basic theories of sociology. It is a set of connected behaviours, rights, obligations, beliefs, and norms as conceptualized by people in a social situation~\cite{Biddle1986Recent}. In recent years, some works have been proposed to utilize the social role information as a new component to enhance the performance of recommender systems. Most of them assume that social roles can be obtained directly or easily from social networks~\cite{Zhao2014Social,Wu2015Participatory,Wang2007Role,Huang2016Social}. Others presume that part of the social roles are labeled and thus can be solved within the classification framework~\cite{Zhao2013Inferring}. Only a few adopt unsupervised learning, such as community detection~\cite{Mislove2010You,Henderson2012Rolx} to infer a user's social role.
+
+\section{Identify Social Roles}~\label{sec:role}
+%problem definition
+We are handling a stream of social network snapshots $G={G(0),G(1),\cdots,G(T)}$, where each network snapshot is represented by a set of nodes (users) and edges (social influences) $G(t)=<V(t),E(t)>$.  With some pre-processing steps, we represent each user $v(t)\in V(t)$ as a feature vector. We use the same notation $v(t)$ for both the node and its corresponding feature vector, whenever their use is not ambiguous. We define the social role identification problem as a clustering problem. Formally, given $V={V(0),V(1),\cdots,V(T)}$, a specified number $K$ of clusters (roles), our goal is to learn the cluster label $b(v(t))$ for each user $v(t)\in V(t)$. Following the conventions used in the corresponding research literature, we use one-of-K coding, where $b_k(v(t))\in \{0,1\}$ and $\Sigma_{k=1}^K b_k(v(t))=1$.
+
+
+Many clustering algorithms are distance based. For example, by introducing a cluster centroid, we can assign the user at each timestamp $v(t)$ to its nearest role cluster. The assignment is implemented by computing the distance between any given node to any \textit{centroid cluster vector}.
+
+\begin{myDef}
+For each cluster $k$, we define a \textbf{centroid cluster vector} as $c_k=\frac{\Sigma_{v,t}b_k(v(t)) v(t)}{\Sigma_{v,t} b_k(v(t))} $.
+\end{myDef}
+
+%dynamic nature of social role
+Distance based clustering algorithms are simple and powerful. However, they are not the best choice for clustering dynamic roles. Social roles are continuously evolving. One can reasonably assume that the change is smooth, so that the social role for one user will remain static in a certain period of time. However, a distance based clustering algorithm might wrongly split such a time segment.
+
+To solve this problem, we present an incremental algorithm. For each user at each timestamp $v(t)$, the algorithm favors to keep to the previous cluster assignment, unless it is too close to another cluster and it deviates from its previous patterns. It is necessary to  maintain statistics for each user. Therefore we define a \textit{user specific cluster centroid} as follows.
+
+\begin{myDef}
+For each user $v$, we define a \textbf{user specific cluster centroid} as $\bar{v_k}=\frac{\Sigma_{t}b_k(v(t)) v(t)}{\Sigma_t b_k(v(t))} $.
+\end{myDef}
+
+\Figure[t!](topskip=0pt, botskip=0pt, midskip=0pt){algorithm.eps}{An illustrative example of role identification. \label{fig:role}
+}
+
+Intuitively, a large social network, regardless of the timestamp, consists of all possible social roles. In the beginning snapshot of the stream $V(0)$,  we conduct a K-means clustering algorithm to initialize $K$ clusters. Once the initial clusters are established, we compute the centroid cluster vectors and user specific cluster centroids. As shown in Alg.~\ref{alg:clustering}, for a new $v(t)$, we find its nearest cluster. If the nearest cluster does not match its previous cluster assignment, we evaluate distances to both cluster centroid and previous user specific cluster centroid. If the new node is much closer to another cluster, or if it is much far from its previous centroid, we assign it to a new cluster. We use a distance threshold $\epsilon$ to control the evaluation. For example, in Fig.~\ref{fig:role}, black dashed lines are cluster boundaries by conventional clustering algorithms, therefore $v(3)$ will be assigned to cluster $2$. However, since it is not close enough to the second cluster, $l_{3,1}-l_{3.,2} <\epsilon$ and it is not far from previous patterns $d_{3,1}<\epsilon$, we assign $v(3)$ to its previous cluster.  $v(5)$ also lies near the boundary. But since it deviates from previous patterns $d_{5,2}>\epsilon$, we assign it to the nearest cluster.
+
+\begin{algorithm}[htbp]
+\caption{Incremental role clustering}\label{alg:clustering}
+\begin{algorithmic}
+\REQUIRE Initialized clusters $C=\{c_k\},b(V)=\{b(v)\},\bar{V_{b(V)}}=\{\bar{v_{b(v)}}\}$
+\WHILE {$t!= T$}
+\FORALL{$v(t) \in V(t)$}
+%keep the previous assignment
+%find the nearest
+\STATE  $k \leftarrow \arg_k \min distance(v(t), c_k)$
+%if not match, compute l,d
+\IF{$k \neq b(v)$}
+\STATE $l_{k,t} \leftarrow distance (c_k,v(t))$
+\STATE $l_{b(v),t} \leftarrow distance (c_{b(v)},v(t))$
+\STATE $d_{b(v),t} \leftarrow distance (\bar{v_{b(v)}},v(t))$
+%if too close to a new cluster
+\IF{$l_{b(v),t}-l_{k,t}> \epsilon$}
+\STATE $b(v)\leftarrow k$
+%if too far from previous
+\ELSE  \IF{$d_{b(v),t}>\epsilon$}
+\STATE $b(v)\leftarrow k$
+\ENDIF
+\ENDIF
+\ENDIF
+\STATE $b_{b(v)}(v(t))=1$
+\ENDFOR
+\STATE update $C,b(V),\bar{V_{b(V)}}$
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+
+%Proceeding
+
+\section{Role Specific Social Recommender}\label{sec:model}
+Let the input be a stream of ratings $r_{i,j,t}$, which is the rating given by user $i$ on item $j$ at time $t$. We allow the items to be rated for multiple times. For example, in keyword recommendation, each keyword could be repeatedly adopted at different timestamps; in venue recommendation, each user is likely to publish papers on the same venue at different timestamps. Suppose we are given the graph stream $G$ and detected roles of each user at different timestamp $b(v(t))$. Intuitively, if the user's social role changes at a certain time point, i.e. from student to teacher, it is necessary to distinguish the two roles. We divide the rating stream for each user according to the value of $b(v(t))$. For a user with a modified role, we create a new pseudo user. We collect all the ratings in the time period with a consistent role and compute the average rating within this period.  Thus we construct a rating matrix $R\in \mathcal{R}^{|U|\times |Q|}$, where $|U|$ is the number of pseudo users, $|Q|$ the number of items, the element $r_{u,q} \in R$ is the average rating  which (pseudo) user $u$ gives to item $q$ in a period of time $T$.  We also build a social network based on the cumulative $G$, where user $u$ is linked to a set of neighbors $N(u)=N(u)^o + N(u)^i$. $N_u^o$ is the set of out nodes, and $N_u^i$ represents the in nodes. There are $K$ different roles, the role of user $u$ is denoted by $g(u) \in \{1,\cdots, K\}$.
+
+Suppose each user is represented by a preference vector $u\in \mathcal{R}^{P}$ over $P$ topics, and each item $q\in \mathcal{R}^{P}$ is factorized to $P$ topics. $w\in \mathcal{R}^{K}$ represents the influences from roles $1\sim K$ to role $w$. The Role Specific Social Recommender (RSSR) model aims to minimize the following objective function.
+
+\begin{equation}
+\begin{split}
+\min_{U,Q,W} & \Sigma_{r_{u,q}\neq 0}\{r_{u,q}-\alpha(u^T q)\\
+&-(1-\alpha)(\Sigma_k \Sigma_{n \in N(u)^i,g(n)=k}\frac{k_{g(i)}}{|N(u)^i_k|} r_{n,q})\}^2 \\
+&+\lambda_u\|U\|_2 +\lambda_v \|V\|_2 \\
+w.r.t. & \forall w, \forall k, w_{k}\geq 0, \Sigma_k w_{k} =1.
+\end{split}
+\label{equ:RSSR}
+\end{equation}
+
+
+
+Equ.~\ref{equ:RSSR} learns the user preference matrix $U\in \mathcal{R}^{|U| \times P}$, the item factor matrix $Q\in \mathcal{R}^{|Q| \times P}$.  One possible interpretation of the RSSR model is to assume the user preference at time $t$ is affected by himself/herself and a combination of influencers. $u(t)=\alpha u(t-1)+(1-\alpha) (\Sigma_k \Sigma_{n \in N(u)^i,g(n)=k}\frac{k_{g(i)}}{|N(u)^i_k|} n(t-1)$. In matrix form, let's denote $U(t)=AU(t)$, where $A \in R^{|U| \times |U|}$ is the cyclic adjustment matrix.  For a period of time $0\sim T$, we know from construction that the role of each user is static.  In other words, $A$ is static over the period. We have the following theorem.
+
+ \begin{myThm}\label{thm:average}
+Given the cyclic adjustment matrix $A$ as defined above, $\bar{U(t)}=\Sigma_{k=1}^K U(kt)$. If $U(t)=AU(t)$, then $\lim_{t \rightarrow 0} \bar{U(t)}= A\bar{U(t)}$
+ \end{myThm}
+
+\textit{Proof:} Because $U(t)=AU(t)$, $\bar{U(t)}=A \Sigma_{k=0}^{K-1} U(kt) = A \bar{U(t)} + A(U(0) - U(T))t $. Then $\bar{U(t)}-A \bar{U(t)} = \Sigma_jK_j\lambda_j\eta_j$, where $K_j$s are constants depending on $U(0)$, and $\lambda_j$ are the characteristic values and $\eta_j$ are the corresponding characteristic vectors. Since $\rho(A)\leq |A| = 1$, we know that  $\lim_{t \rightarrow 0} \bar{U(t)}= A\bar{U(t)}$.
+
+
+The inference of Equ.~\ref{equ:RSSR} is based on a simplex projection algorithm in Alg.~\ref{alg:inference}.
+
+
+\begin{algorithm}[htb!]
+\caption{Inference}\label{alg:inference}
+\begin{algorithmic}
+\REQUIRE Randomly initialize $U,V,W$
+\WHILE {not converge}
+\FORALL{$u,v,w$}
+%iteration
+%Ru,Rv,Rgu,Rg
+\STATE $Ru_{j}=r_{u,j}-(1-\alpha)(\Sigma_g\frac{g_{g(u)}}{|N(i)^g|}\Sigma_{n\rightarrow i,g(n)=g} r_{n,j})$
+\STATE  $Rv_{i}=r_{i,v}-(1-\alpha)(\Sigma_g\frac{g_{g(i)}}{|N(i)^g|}\Sigma_{n\rightarrow i,g(n)=g} r_{n,v})$
+\STATE $Rgu_{g,j} = \frac{\Sigma_{n\rightarrow u, g(n)=g} r_{nj}}{|N(u)^g|}$
+\STATE $Rg_g = \Sigma_{g(u)=w} \Sigma_{r_{u,v}\neq 0} (r_{u,v} -\alpha uv -(1-\alpha) \frac{\Sigma_{n\rightarrow u, g(n)=g} r_{n,v}}{|N(u)^g|})$
+\STATE  $u= {(\alpha^2 V^u {V^u}^T +\lambda_u I)}^{-1} (\alpha V^u Ru)$
+\STATE $v = {(\alpha^2 U^v {U^v}^T +\lambda_v I)}^{-1} (\alpha U^v Rv)$
+%W
+\STATE $w= w+\eta \{{(1-\alpha)}^2 [\Sigma_{g(u)=w} Rgu {Rgu}^T] W_s-(1-\alpha)Rg\}$
+\STATE sort elements in $w:W_{(1)}\leq W_{(2)}\cdots W_{(K)}$
+\FOR {$i=K-1,i\geq 1, i++$}
+\STATE $t_i = \frac{\Sigma_{j=i+1}^K W_{(j)}-1}{K-i}$
+\IF {$t_i \geq W_{(i)}$}
+\STATE $\hat{t}=t_i$
+\STATE  \bf{break}
+\ELSE
+\STATE $i \leftarrow i-1$
+\ENDIF
+\STATE $\hat{t}=\frac{\Sigma_{j=1}^K W_{(j)}-1}{K}$
+\STATE $W=(W-\hat{t})_+$
+\ENDFOR
+\ENDFOR
+
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Complexity Analysis} One time-consuming job in algorithm 2 is the updates $U$ and $V$. We need to invert a $P\times P$ matrix which usually takes $O(P^3)$ operations. Another time-consuming job in Algorithm 2 is to update $W$ and project $W$ on a simplex. The complexity of updates W is $O(K^2)$, as it is shown that there are at most $K$ candidates which can be computed explicitly~\cite{Chen2011Projection}. The overall time complexity is $O(U+Q)P^3+UQP^2)$. By contrast, the complexity of the original peer-peer algorithm is determined by max($O(U+Q)P^3+UQP^2)$, $O(U^2)$). Our algorithm is more efficient especially when $U$ is large, which is common in real social networks.
+
+\section{Experiment}\label{sec:experiment}
+\subsection{Experimental Setup}
+We use a common benchmark for academic recommendations. We use the DBLP publication data set with  co-author network available in~\cite{Tang2008ArnetMiner}. For eliminating possible noise brought by cross domain co-authorships and suiting to different experimental tasks, we select proceedings and journals related to two research domains,  namely data mining and graphics. We then extract publications on these domains during different time periods and construct four subsets: (1)dm2000: papers published on data mining related conferences and journals between 2000 to 2005; (2)dm2006: papers published on data mining related conferences and journals between 2006 to 2011; (3)gr2000: papers published on graphics related conferences and journals between 2000 to 2005; (4)gr2006: papers published on graphics related conferences and journals between 2006 to 2011. The statistics of the dataset are shown in Tab.~\ref{tab:statistics}.
+
+\textbf{Preprocessing:} The keywords are extracted from the title field of each paper. We segment the keywords by filtering the English markers, removing stop-words and stemming. The dataset is constructed into a set of three tuples $\left\{user\_id, keywords\_id, ratings/frequency \right\}$. The features vector of each user used in role identification include (1)in-degree, (2) out-degree, (3) a vector of average degree of its neighbors, (4) number of ratings and (5) its Pagerank value at the current snapshot. In our algorithm, $P=20,\alpha=0.7, K=15, \lambda_u=\lambda_v=0.005$. Convergence is achieved when maximal Iteration number achieves 400. The comparison algorithm is implemented by LibRec~\cite{Guo2015LibRec} and using the default parameter. The experiments are executed on a server with an Intel Xeon E5620 Processor and main memory 80GB.
+
+\begin{table}[htbp]
+\caption{Statistics of dataset}\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\#dataset & \#authors & \#papers & \#keywords & \#coauthor relationships \\\hline
+DBLP&1,712,433 & 2,092,356 & 415,555 & 4,258,615 \\\hline
+dm2000& 10,628& 5,684& 7,450& 39,102\\\hline
+dm2006& 27,130& 13,237& 13,617& 115,938\\\hline
+gr2000& 7,563& 4,808& 6,517& 31,828\\\hline
+gr2006& 16,688& 10,101& 10,934& 85,230\\\hline
+\end{tabular}\label{tab:statistics}
+\end{table}
+
+\subsection{Parameter Tunning}
+Two parameters might affect the model performance: (1)$\alpha$: the combination coefficient which controls to what degree the user preference is dependent on its neighbors; (2)$K$: the number of social roles in the social network. We tune the parameters based on a small set of publications which contains 200 authors with their frequently adopted keywords. We plot the performance trends (in RMSE) for $\alpha= 0.1,0.3,0.5,0.7,0.9$ and $K=3,5,10,15,20$ in Fig.~\ref{fig:parameter}. It shows that best results are obtained when $\alpha=0.7$ and $K=15$. The mediate value of $\alpha$ suggests that users are more likely to inherit their own preferences, but they will also be influenced by other people. The difference in RMSE for various values of $K$ is small, which suggests that we can set the estimated number of roles to a small number when the performance loss is affordable
+\begin{figure}[htbp]
+\centering
+\subfigure[$\alpha$]{
+\includegraphics[width=0.45\textwidth]{alpha.eps}}
+\subfigure[$K$]{
+\includegraphics[width=0.45\textwidth]{G.eps}}
+\caption{RMSE performance over various values of parameters}
+\label{fig:parameter}
+\end{figure}
+
+\subsection{Social Recommendation}
+We first evaluate the performance of recommendation. The task is to predict author's ratings on keywords. Each rating is computed as the average normalized frequency over papers during the period of the detected period where the author's social role is static by Sec.~\ref{sec:role}. The comparative methods include SocialMF~\cite{Jamali2010matrix}, BPMF~\cite{Salakhutdinov2008Bayesian} and STE~\cite{ma2009learning}, TrustMF~\cite{Yang2013Social} and SoRec~\cite{ma2008sorec}. We use the standard metrics to measure recommender performances: the mean absolute error (MAE) and the root mean square error (RMSE), as defined below.
+
+\begin{equation*}
+MAE=\frac{1}{n}\Sigma_{i=1}^{N}|\hat{r_i}-r_i|
+\end{equation*}
+
+\begin{equation*}
+RMSE=\sqrt{\frac{1}{n}\Sigma_{i=1}^{N}{(\hat{r_i}-r_i)}^2}
+\end{equation*}
+
+We report average MAE and RMSE results in 5-fold validation.As shown in Tab.~\ref{tab:rec}, our proposed model outperforms state-of-the-art recommenders in all subsets. We observe that the increase of performance is significant. In most data sets, MAE performance is boosted by $40\%$. The enhancement in RMSE is less. The underlying reason might be that for less prestigious authors (users with lower publication frequencies), our algorithm produces more accurate predictions; while for highly popular authors (users with higher publication frequencies), the improvement by our algorithm is smaller.
+
+\begin{table*}[htbp]
+\caption{Comparative performance of recommendation}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+Evaluation &SocialMF	&BPMF	&STE	&TrustMF  & SoRec &	RSSR\\\hline
+\multicolumn{6}{|l|}{dm2000} \\\hline
+MAE	 &0.0989&	0.1327&0.1128	&0.1943&0.1029&\textbf{0.0611}\\\hline
+RMSE	&0.1495&	0.2007	&0.1457	&0.2680&	0.1505	&\textbf{0.1312}\\\hline
+\multicolumn{6}{|l|}{dm2006} \\\hline				
+MAE	 & 0.0949 &0.1346	&0.0916	&0.1976	&0.0986&\textbf{0.0480}\\\hline
+RMSE &	0.1419	& 0.1972&	0.1381	& 0.2635& 0.1457& \textbf{0.1237}\\\hline
+\multicolumn{6}{|l|}{gr2000}			\\\hline	
+MAE	&0.1134&	0.1817&	0.1184&	0.2129&	0.1192&\textbf{0.0568}\\\hline
+RMSE	&0.1677	&0.2755	&0.1674	&0.2821&	0.1679&\textbf{0.1659}\\\hline
+\multicolumn{6}{|l|}{gr2006}			\\\hline
+MAE	&0.0997	&0.1691&	0.0998&	0.1889&	0.1027&\textbf{0.0634}\\\hline
+RMSE	&0.1479	&0.2498	&0.1476&	0.2693	&0.1543	&\textbf{0.1457}\\\hline
+\end{tabular}\label{tab:rec}
+\end{table*}
+
+\subsection{Social Role}
+We next compare the recommendation performance with different role clustering methods.The comparative methods include community detection~\cite{Mislove2010You} and RolX~\cite{Henderson2012Rolx}, K-means and spectral clustering. As shown in Tab.~\ref{tab:indent}, our incremental clustering algorithm is competitive with respect to state-of-the-art algorithms. This verifies that our algorithm achieves both effectiveness and efficiency. We found that the model performance on dm2000 and dm2006 would be slightly worse. On possible explanation is that DM is an interdisciplinary domain, thus to extract accurate social roles, one must use comprehensive feature information as in~\cite{Mislove2010You} and RolX~\cite{Henderson2012Rolx}.
+
+\begin{table*}[htbp]
+\caption{Comparative performance of role identification}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Evaluation &K mean	&Spectral clustering	&Community detection  & RolX &	Our\\\hline
+\multicolumn{6}{|l|}{dm2000} \\\hline
+MAE	 & 0.0612&0.0610&0.0600 &\textbf{0.0599} &0.0610\\\hline
+RMSE	&0.1324&0.1321&0.1318&0.1315&\textbf{0.1312}\\\hline
+\multicolumn{6}{|l|}{dm2006} \\\hline				
+MAE	 & 0.0571 &0.0569&0.0561&0.0557&\textbf{0.0480}\\\hline
+RMSE &0.1238&0.1202 &\textbf{0.1197} &0.1200&0.1237\\\hline
+\multicolumn{6}{|l|}{gr2000}			\\\hline	
+MAE	&0.0765&0.0765&0.0760&0.0758&\textbf{0.0568}\\\hline
+RMSE	&0.1668&0.1663&0.1668&0.1668&\textbf{0.1659}\\\hline
+\multicolumn{6}{|l|}{gr2006}			\\\hline
+MAE	&0.0642&0.0641&0.0634&\textbf{0.632}&0.0634\\\hline
+RMSE	&0.1461	&0.1463	&0.1461	&0.1459	&\textbf{0.1457}\\\hline
+\end{tabular}\label{tab:indent}
+\end{table*}
+
+
+\subsection{The Skeleton Network}
+We next testify whether the abstract network inferred in our model can replace the original network within the context of recommender systems. We implement a naive graph-based recommendation algorithm on different networks. For each target user, the graph-based recommendation algorithm propagates its neighbors' ratings to itself, $r_{i,j}=\Sigma_{n\in N(i)} w_{n,i} r_{n,j}$.
+
+The comparative networks are: (1) Binary: original network with binary edge weighting, where $w_{n,i}=1$ indicates that a coauthor relationship exists; (2) Heuristic1: undirected coauthor network with heuristically assigned  weight $w_{n,i}=\frac{1}{2}{\frac{1}{|N(i)|}+\frac{1}{|N(n)|}}$; (3) Heuristic2: directed coauthor network with heuristically assigned weight $w_{n,i} = \frac{|N(n)^o|}{N(n)^o+N(i)^i}$; (4)Block: inferred network with community specific weights in~\cite{Jamali2011Generalized}; (5) Peer-to-Peer: inferred network with peer-to-peer weights in~\cite{AuYeung2011Strength}.
+
+The evaluation metric is RMSE. As shown in Tab.~\ref{tab:network}, the inferred network in our model generates RMSE performance which is significantly better than other inferred networks. It produces best result on cold-start users. The best results overall are obtained by a heuristic weighted undirected network. But our model achieve comparable results. We would like to point out here that the best  performance is obtained on a ``full'' network, while our performance is achieved on a ``skeleton'' network with remarkably reduced storage costs.
+
+\begin{table*}[htbp]
+\caption{Performance of graph based recommendation on social network}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+Network &  Binary & Heuristic1 & Heuristic2 &	Block	& Peer-to-Peer	&RSSR \\\hline
+Overall	&2.3311&	0.\textbf{3285}	&0.8176	&0.8346&	0.6975	&\textbf{0.3465}\\\hline
+Cold-start	&2.1437	&\textbf{0.3854}	&0.8704	&0.9964	&0.8412&	\textbf{0.3767}\\\hline
+Old User&2.3855	&\textbf{0.3093}	&0.8008	&0.7784	&0.6472	&\textbf{0.3367}\\\hline
+\end{tabular}\label{tab:network}
+\end{table*}
+
+
+\subsection{Efficiency}
+The efficiency study is implemented on domain specific networks to eliminate possible noise brought by cross domain co-authorships. We first plot the change of RMSE on training set at each iteration. The comparative method is STE~\cite{ma2009learning}, which also models rating as a combination of user's own preference and influencers' preferences. Unlike us, STE uses peer-to-peer influence. From Fig.~\ref{fig:iteration}, we can see that our model converges faster than STE on all domains. It suggests that, despite of the reduced storage costs and computation costs at each iteration, our model is more efficient in term of the total running time.
+
+\begin{figure}[htbp]
+\centering
+\subfigure[dm2000]{
+\includegraphics[width=0.4\textwidth]{dm2000-iter.eps}}
+\subfigure[dm2006]{
+\includegraphics[width=0.4\textwidth]{dm2006-iter.eps}}
+\end{figure}
+\begin{figure}[htbp]
+\centering
+\subfigure[gr2000]{
+\includegraphics[width=0.4\textwidth]{gr2000-iter.eps}}
+\subfigure[gr2006]{
+\includegraphics[width=0.4\textwidth]{gr2006-iter.eps}}
+\caption{RMSE versus number of iterations for different models}
+\label{fig:iteration}
+\end{figure}
+
+We shrink the  set of publication on each domain to $20\%,40\%,60\%,80\%$ and plot the number of iterations required to achieve the difference between $RMSE<0.01$ in Fig.~\ref{fig:convergence}. We can see that the number of iterations demanded to converge increases as the size of data sets increases. The number for STE increases at a faster rate, while that for our model increases linearly at a lower rate. It demonstrates the scalability of our model for large data sets.
+
+\begin{figure}[htbp]
+\centering
+\subfigure[dm2000]{
+\includegraphics[width=0.4\textwidth]{dm2000-conv.eps}}
+\subfigure[dm2006]{
+\includegraphics[width=0.4\textwidth]{dm2006-conv.eps}}
+\end{figure}
+\begin{figure}[htbp]
+\centering
+\subfigure[gr2000]{
+\includegraphics[width=0.4\textwidth]{gr2000-conv.eps}}
+\subfigure[gr2006]{
+\includegraphics[width=0.4\textwidth]{gr2006-conv.eps}}
+\caption{Number of iterations for convergence versus the size of data set}
+\label{fig:convergence}
+\end{figure}
+
+\section{Conclusion}\label{sec:conclusion}
+Role theory is an important perspective in sociology, which considers human behavior to be the acting out of social roles. Though valid and intuitive in explaining the formation of cultural and social norms, its effectiveness in recommender systems is undetermined.  In this contribution, we propose to incorporate social roles into the matrix factorization framework for recommendation. We first define the problem of  social role detection and present an incremental clustering algorithm. Because most previous social recommenders adopt a two-step approach to augment recommendations, such a two-step approach can not take full advantage of the user's preference information. We next model the user preference at each timestamp being a combination of users' own previous preferences and influences' previous preferences. We present a single-step algorithms to simultaneously infer preferences and influence strength, based on the assumption that social role is static within a time window. Comprehensive experiments on real data sets demonstrate the efficiency and effectiveness of our model to generate precise recommendations. In the future, it is worthy to investigate the dynamic nature of social roles.  Also, we would like to model multiple roles and infer the semantics of social roles for better interpretability.
+\begin{thebibliography}{10}
+
+\bibitem{AuYeung2011Strength}
+C.-m. Au~Yeung, T.~Iwata.
+\newblock ``Strength of social influence in trust networks in product review sites,''
+\newblock in {\em Proceedings of the fourth ACM international conference on Web search and data mining}, 2011, pp. 495-504.
+
+\bibitem{Biddle1986Recent}
+B.~J. Biddle.
+\newblock ``Recent development in role theory,''
+\newblock {\em Annual Review of Sociology}, vol. 12, no. 1, pp. 67-92, 1986.
+
+\bibitem{Duff2012THINK}
+K.~J. Duff.
+\newblock {\em Think Social Psychology},
+\newblock Boston, MA, USA:  Allyn \& Bacon/Pearson, 2012.
+
+\bibitem{Forsati2015PushTrust}
+R.~Forsati, I.~Barjasteh, F.~Masrour, et al.
+\newblock ``Pushtrust: An efficient recommendation algorithm by leveraging trust and distrust relations,''
+\newblock in {\em Proceedings of the 9th ACM Conference on Recommender Systems}, 2015, pp. 51-58.
+
+\bibitem{Forsati2014Matrix}
+R.~Forsati, M.~Mahdavi, M.~Shamsfard, et al.
+\newblock ``Matrix factorization with explicit trust and distrust side information for improved social recommendation,''
+\newblock {\em ACM Transactions on Information Systems (TOIS)}, vol. 32, no. 4, pp. 17, 2014.
+
+\bibitem{Jamali2009TrustWalker}
+M.~Jamali, M.~Ester.
+\newblock ``Trustwalker: A random walk model for combining trust-based and item-based recommendation,''
+\newblock in {\em Proceedings of the 15th ACM SIGKDD international conference on Knowledge discovery and data mining}, 2009, pp. 397-406.
+
+\bibitem{Jamali2010matrix}
+M.~Jamali, M.~Ester.
+\newblock ``A matrix factorization technique with trust propagation for recommendation in social networks,''
+\newblock in {\em Proceedings of the fourth ACM conference on Recommender systems}, 2010, pp. 135-142.
+
+\bibitem{Jamali2011Generalized}
+M.~Jamali, T.~Huang, M.~Ester.
+\newblock ``A generalized stochastic block model for recommendation in social rating networks,''
+\newblock in {\em Proceedings of the fifth ACM conference on Recommender systems}, 2011, pp. 53-60.
+
+\bibitem{Koren2009Matrix}
+Y.~Koren, R.~Bell, C.~Volinsky.
+\newblock ``Matrix factorization techniques for recommender systems,''
+\newblock {\em Computer}, vol. 42, no. 8, pp. 30-37, 2009.
+
+\bibitem{Krohn-Grimberghe2012Multi}
+A.~Krohn-Grimberghe, L.~Drumond, C.~Freudenthaler, et al.
+\newblock ``Multi-relational matrix factorization using bayesian personalized ranking for social network data,''
+\newblock in {\em Proceedings of the fifth ACM international conference on Web search and data mining}, 2012, pp. 173-182.
+
+\bibitem{ma2009learning}
+H.~Ma, I.~King, M.~Lyu.
+\newblock ``Learning to recommend with social trust ensemble,''
+\newblock in {\em Proceedings of the 32nd international ACM SIGIR conference on Research and development in information retrieval}, 2009, pp. 203-210.
+
+\bibitem{Ma2009Learninga}
+H.~Ma, M.~R. Lyu, I.~King.
+\newblock ``Learning to recommend with trust and distrust relationships,''
+\newblock in {\em Proceedings of the third ACM conference on Recommender systems}, 2009, pp. 189-196.
+
+\bibitem{ma2008sorec}
+H.~Ma, H.~Yang, M.~Lyu, et al.
+\newblock ``Sorec: social recommendation using probabilistic matrix factorization,''
+\newblock in {\em Proceedings of the 17th ACM conference on Information and knowledge management}, 2008, pp. 931-940.
+
+\bibitem{Ma2011Recommender}
+H.~Ma, D.~Zhou, C.~Liu, et al.
+\newblock ``Recommender systems with social regularization,''
+\newblock in {\em Proceedings of the fourth ACM international conference on Web search and data mining}, 2011, pp. 287-296.
+
+\bibitem{salakhutdinov2008probabilistic}
+R.~Salakhutdinov, A.~Mnih.
+\newblock ``Probabilistic matrix factorization,''
+\newblock in {\em Advances in neural information processing systems}, 2008, pp. 1257-1264.
+
+\bibitem{Yang2013Social}
+B.~Yang, Y.~Lei, D.~Liu, et al.
+\newblock ``Social collaborative filtering by trust,''
+\newblock in {\em Proceedings of the Twenty-Third International Joint Conference on Artificial Intelligence}, 2013, pp. 2747-2753.
+
+\bibitem{Yao2014Modeling}
+W.~Yao, J.~He, G.~Huang, et al.
+\newblock ``Modeling dual role preferences for trust-aware recommendation,''
+\newblock in {\em Proceedings of the 37th international ACM SIGIR conference on Research \& development in information retrieval}, 2014, pp. 975-978.
+
+\bibitem{Tang2008ArnetMiner}
+J.~Tang, J.~Zhang, L.~Yao, et al.
+\newblock ``ArnetMiner: Extraction and Mining of Academic Social Networks,''
+\newblock in {\em Proceedings of the 14th ACM SIGKDD international conference on Knowledge discovery and data mining}, 2008, pp. 990-998.
+
+\bibitem{Salakhutdinov2008Bayesian}
+R.~Salakhutdinov,  A.~Mnih.
+\newblock ``Bayesian probabilistic matrix factorization using Markov chain Monte Carlo,''
+\newblock in {\em Proceedings of the 25th international conference on Machine learning}, 2008, pp. 880-887.
+
+\bibitem{Zhao2013Inferring}
+Y.~Zhao, G.~Wang, PS.~Yu, et al.
+\newblock ``Inferring social roles and statuses in social networks,''
+\newblock in {\em Proceedings of the 19th ACM SIGKDD international conference on Knowledge discovery and data mining}, 2013, pp. 695-703.
+
+\bibitem{Zhao2014Social}
+X.~Zhou, B.~Wu, Q.~Jin, et al.
+\newblock ``Social Stream Organization Based on User Role Analysis for Participatory Information Recommendation,''
+\newblock in {\em Ubi-Media Computing and Workshops (UMEDIA), 2014 7th International Conference on}, 2014, pp. 105-110.
+
+\bibitem{Wu2015Participatory}
+B.~Wu, X.~Zhou, Q.~Jin.
+\newblock ``Participatory information search and recommendation based on social roles and networks,''
+\newblock {\em Multimedia Tools and Applications}, vol. 74, no. 14, pp. 5173-5188, 2015.
+
+\bibitem{Wang2007Role}
+Y.~Wang, V.~Varadharajan.
+\newblock ``Role-based recommendation and trust evaluation,''
+\newblock in {\em E-Commerce Technology and the 4th IEEE International Conference on Enterprise Computing, E-Commerce, and E-Services} 2007, pp. 278-288.
+
+\bibitem{Huang2016Social}
+S.~Huang, J.~Zhang, L.~Wang, et al.
+\newblock ``Social friend recommendation based on multiple network correlation,''
+\newblock {\em IEEE Transactions on Multimedia}, vol. 18, no. 2, pp. 287-299, 2016.
+
+\bibitem{Mislove2010You}
+A.~Mislove, B.~Viswanath, KP~Gummadi, et al.
+\newblock ``You are who you know: inferring user profiles in online social networks,''
+\newblock in {\em Proceedings of the third ACM international conference on Web search and data mining}, 2010, pp. 251-260.
+
+\bibitem{Henderson2012Rolx}
+K.~Henderson, B.~Gallagher, T~Eliassi-Rad, et al.
+\newblock ``Rolx: structural role extraction \& mining in large graphs,''
+\newblock in {\em Proceedings of the 18th ACM SIGKDD international conference on Knowledge discovery and data mining}, 2012, pp. 1231-1239.
+
+\bibitem{Chen2011Projection}
+Y.~Chen, X.~Ye.
+\newblock ``Projection Onto A Simplex,''
+\newblock {\em ArXiv}, https://arxiv.org/abs/1101.6081, 2011.
+
+\bibitem{Guo2015LibRec}
+G.~Guo, J.~Zhang, Z~Sun, et al.
+\newblock ``LibRec: A Java Library for Recommender Systems,''
+\newblock in {\em UMAP Workshops}, vol.4, 2015.
+
+\end{thebibliography}
+
+\EOD
+
+\end{document}
